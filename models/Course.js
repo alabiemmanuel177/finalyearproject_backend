@@ -10,9 +10,6 @@ const CourseSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    group: {
-      type: String,
-    },
     unit: {
       type: Number,
       required: true,

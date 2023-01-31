@@ -25,9 +25,6 @@ const StudentSchema = new mongoose.Schema(
     level: {
       type: Number,
     },
-    group: {
-      type: String,
-    },
     otp: {
       type: String,
     },

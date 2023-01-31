@@ -32,7 +32,7 @@ app.get("/", (req, res) => {
 //db connect
 connectDB();
 
-const port = process.env.ACCESS_PORT || 5900;
+const port = process.env.ACCESS_PORT || 5700;
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}.`);

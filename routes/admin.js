@@ -95,22 +95,4 @@ router.post("/reset/verify", async (req, res) => {
   res.send({ message: "Password updated" });
 });
 
-// app.post("/change-password", async (req, res) => {
-//   try {
-//     const admin = await Admin.findOne({ username: req.body.username });
-//     const passwordHash = admin.password;
-//     const isValid = await bcrypt.compare(req.body.oldPassword, passwordHash);
-//     if (isValid) {
-//       const hashedPassword = await bcrypt.hash(req.body.newPassword);
-//       user.password = hashedPassword;
-//       await user.save();
-
-//       return res.send({ message: "Password changed successfully" });
-//     }
-//     return res.status(400).json("Password do not match");
-//   } catch (error) {
-//     return res.status(500).json(err);
-//   }
-// });
-
 module.exports = router;

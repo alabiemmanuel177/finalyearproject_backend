@@ -57,40 +57,25 @@ router.get("/:id", async (req, res) => {
 });
 
 //CHANGE PASSWORD STUDENT
-router.post("/reset", async (req, res) => {
-  const { email } = req.body;
+router.post("/change-password", async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
 
-  // Find the student with the given email
-  const student = await Student.findOne({ email });
-  if (!student) return res.status(400).send({ error: "Invalid email" });
+  try {
+    const student = await Student.findOne({ _id: req.student.id });
 
-  // Generate and send an OTP
-  const otp = generateOTP();
-  sendOTP(student.email, otp);
+    const isMatch = await bcrypt.compare(oldPassword, student.password);
+    if (!isMatch)
+      return res.status(400).json({ msg: "Incorrect old password" });
 
-  // Save the OTP in the student's database record
-  student.otp = otp;
-  await student.save();
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
 
-  res.send({ message: "OTP sent" });
-});
-
-router.post("/reset/verify", async (req, res) => {
-  const { email, otp, password } = req.body;
-
-  // Find the student with the given email
-  const student = await Student.findOne({ email });
-  if (!student) return res.status(400).send({ error: "Invalid email" });
-
-  // Check if the OTP is correct
-  if (student.otp !== otp)
-    return res.status(400).send({ error: "Invalid OTP" });
-
-  // Update the student's password
-  student.password = password;
-  await student.save();
-
-  res.send({ message: "Password updated" });
+    await student.save();
+    res.json({ msg: "Password changed successfully" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
 });
 
 module.exports = router;
