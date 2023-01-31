@@ -58,17 +58,17 @@ router.get("/:id", async (req, res) => {
 
 //CHANGE PASSWORD STUDENT
 router.post("/change-password", async (req, res) => {
-  const { oldPassword, newPassword } = req.body;
+  const { id, oldPassword, newPassword } = req.body;
 
   try {
-    const student = await Student.findOne({ _id: req.student.id });
+    const student = await Student.findOne({ _id: id });
 
     const isMatch = await bcrypt.compare(oldPassword, student.password);
     if (!isMatch)
       return res.status(400).json({ msg: "Incorrect old password" });
 
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
+    student.password = await bcrypt.hash(newPassword, salt);
 
     await student.save();
     res.json({ msg: "Password changed successfully" });
