@@ -5,7 +5,6 @@ const cors = require("cors");
 const passport = require("passport");
 const flash = require("express-flash");
 const session = require("express-session");
-const { default: corsOption } = require("./corsOptions.js");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -20,7 +19,15 @@ app.use(
 
 app.use(passport.session());
 
-app.use(cors(corsOption)); // Use this after the variable declaration
+var whitelist = ['https://bucodel-lms-backend.onrender.com'];
+var corsOptions = {
+  origin: function(origin, callback){
+    var originIsWhitelisted = whitelist.indexOf(origin) !== -1;
+    callback(null, originIsWhitelisted);
+  }
+};
+
+app.use(cors(corsOptions)); // Use this after the variable declaration
 
 const mainRoute = require("./routes/main");
 
