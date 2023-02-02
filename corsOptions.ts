@@ -1,5 +1,5 @@
 export const corsOption = (req: any, res: any, next: any) => {
-  const allowedOrigins = ["https://bucodel-fysq9nvix-alabiemmanuel177.vercel.app", "https://bucodel.vercel.app/", "https://bucodel-alabiemmanuel177.vercel.app/"];
+  const allowedOrigins = ["https://bucodel-lms.onrender.com"];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
