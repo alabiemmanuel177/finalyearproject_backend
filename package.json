@@ -19,7 +19,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "node index.js",
+    "dev_start": "nodemon index.js"
   },
   "engines": {
     "node": "19.x"

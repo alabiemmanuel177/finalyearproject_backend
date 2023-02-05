@@ -19,15 +19,10 @@ app.use(
 
 app.use(passport.session());
 
-var whitelist = ['https://bucodel-lms-backend.onrender.com'];
-var corsOptions = {
-  origin: function(origin, callback){
-    var originIsWhitelisted = whitelist.indexOf(origin) !== -1;
-    callback(null, originIsWhitelisted);
-  }
-};
 
-app.use(cors(corsOptions)); // Use this after the variable declaration
+app.use(cors({
+  origin: "https://bucodel-lms.onrender.com"
+})); // Use this after the variable declaration
 
 const mainRoute = require("./routes/main");
 
