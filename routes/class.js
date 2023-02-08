@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const Class = require("../models/Class");
+const Course = require("../models/Course");
 
 //CREATE CLASS
 router.post("/", async (req, res) => {
@@ -72,4 +73,23 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
+//GET CLASS COURSES
+router.get("/courses/:id", async (req, res) => {
+  try {
+    const objClass = await Class.findById(req.params.id);
+    if (!objClass) {
+      return res.status(404).send("Class not found");
+    }
+
+    const courses = await Course.find({
+      _id: {
+        $in: objClass.courses,
+      },
+    });
+
+    res.send({ objClass, courses });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
 module.exports = router;

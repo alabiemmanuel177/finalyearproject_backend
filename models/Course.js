@@ -24,12 +24,6 @@ const CourseSchema = new mongoose.Schema(
         ref: "Lecturer",
       },
     ],
-    facilitator: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Facilitator",
-      },
-    ],
   },
   { timestamps: true }
 );

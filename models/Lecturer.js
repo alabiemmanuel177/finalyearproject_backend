@@ -26,12 +26,6 @@ const LecturerSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    courses: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Course",
-      },
-    ],
   },
   { timestamps: true }
 );

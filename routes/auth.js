@@ -38,6 +38,7 @@ router.post("/studentRegister", async (req, res) => {
       matricno: req.body.matricno,
       status: req.body.status,
       courses: req.body.courses,
+      class: req.body.class,
     });
     const student = await newStudent.save();
     return res.status(200).json(student);
@@ -58,7 +59,6 @@ router.post("/lecturerRegister", async (req, res) => {
       type: req.body.type,
       otp: req.body.otp,
       email: req.body.email,
-      courses: req.body.courses,
     });
     const lecturer = await newLecturer.save();
     return res.status(200).json(lecturer);

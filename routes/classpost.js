@@ -1,5 +1,7 @@
 const router = require("express").Router();
 const ClassPost = require("../models/ClassPost");
+const Lecturer = require("../models/Lecturer");
+const Student = require("../models/Student");
 
 //CREATE CLASSPOST
 router.post("/", async (req, res) => {
@@ -69,6 +71,49 @@ router.patch("/:id", async (req, res) => {
     return res.status(200).json(updatedClassPost);
   } catch (err) {
     return res.status(500).json(err);
+  }
+});
+
+// Route to get all posts for a specific course
+router.get("/posts/:courseId", async (req, res) => {
+  try {
+    // Find all posts for the specific course
+    const posts = await ClassPost.find({ course_id: req.params.courseId });
+    if (!posts) return res.status(404).send("No posts found for this course");
+
+    // Create an array to store the post content and author information
+    const postData = [];
+
+    // Loop through all posts and retrieve the author information
+    for (const post of posts) {
+      let author = {};
+      if (post.student_id) {
+        // If the post was created by a student, find the student and return their information
+        const student = await Student.findById(post.student_id);
+        const studentName = `${student.firstname} ${student.lastname} ${student.middlename}`
+        author = {
+          id: student._id,
+          name: studentName,
+          email: student.email,
+        };
+      } else if (post.lecturer_id) {
+        // If the post was created by a lecturer, find the lecturer and return their information
+        const lecturer = await Lecturer.findById(post.lecturer_id);
+        author = {
+          id: lecturer._id,
+          name: lecturer.name,
+          email: lecturer.email,
+        };
+      }
+
+      // Add the post content and author information to the postData array
+      postData.push({ content: post.content, author });
+    }
+
+    // Return the postData array
+    res.send(postData);
+  } catch (err) {
+    res.status(500).send("Error retrieving posts for this course");
   }
 });
 
