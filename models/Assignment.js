@@ -5,14 +5,30 @@ const AssignmentSchema = new mongoose.Schema(
     course: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
+      required: true,
     },
     assignmentQuestion: {
       type: String,
       required: true,
     },
-    lecturer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Lecturer",
+    mark: {
+      type: String,
+      required: true,
+    },
+    dueDate: {
+      type: String,
+      required: true,
+    },
+    dueTime: {
+      type: String,
+      required: true,
+    },
+    title: { type: String, required: true },
+    status: {
+      type: String,
+      required: true,
+      enum: ["assigned", "done", "missing"],
+      default: "assigned",
     },
   },
   { timestamps: true }
