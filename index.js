@@ -19,7 +19,13 @@ app.use(
 
 app.use(passport.session());
 
-const whitelist = ["https://bucodel-lms.onrender.com", "http://localhost:3000"];
+const whitelist = [
+  "https://bucodel-lms.onrender.com",
+  "http://localhost:3000",
+  "https://bucodel.vercel.app",
+  "https://bucodel-alabiemmanuel177.vercel.app",
+  "https://bucodel.vercel.app/",
+];
 const corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
