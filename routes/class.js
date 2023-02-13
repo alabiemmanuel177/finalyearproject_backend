@@ -1,7 +1,7 @@
 const router = require("express").Router();
-const Assignment = require("../models/Assignment");
 const Class = require("../models/Class");
 const Course = require("../models/Course");
+const Assignment = require("../models/Assignment")
 
 //CREATE CLASS
 router.post("/", async (req, res) => {

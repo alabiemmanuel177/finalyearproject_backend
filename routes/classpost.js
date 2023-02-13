@@ -78,7 +78,7 @@ router.patch("/:id", async (req, res) => {
 router.get("/posts/:courseId", async (req, res) => {
   try {
     // Find all posts for the specific course
-    const posts = await ClassPost.find({ course_id: req.params.courseId });
+    const posts = await ClassPost.find({ course: req.params.courseId });
     if (!posts) return res.status(404).send("No posts found for this course");
 
     // Create an array to store the post content and author information

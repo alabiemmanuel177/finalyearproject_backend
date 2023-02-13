@@ -7,7 +7,6 @@ const DepartmentRouter = require("./department");
 const ClassPostRouter = require("./classpost");
 const ClassComment = require("./classcomment");
 const AssignmentRouter = require("./assignment");
-const AssignmentAnswerRouter = require("./assignmentanswer");
 const ClassRouter = require("./class");
 const mainRoute = require("express").Router();
 
@@ -20,7 +19,6 @@ mainRoute.use("/department", DepartmentRouter);
 mainRoute.use("/classpost", ClassPostRouter);
 mainRoute.use("/classcomment", ClassComment);
 mainRoute.use("/assignment", AssignmentRouter);
-mainRoute.use("/assignmentanswers", AssignmentAnswerRouter);
 mainRoute.use("/class", ClassRouter);
 
 module.exports = mainRoute;
