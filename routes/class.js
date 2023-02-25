@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const Class = require("../models/Class");
 const Course = require("../models/Course");
-const Assignment = require("../models/Assignment")
+const Assignment = require("../models/Assignment");
+const CourseMaterial = require("../models/CourseMaterial");
 
 //CREATE CLASS
 router.post("/", async (req, res) => {
@@ -91,6 +92,24 @@ router.get("/courses/:id", async (req, res) => {
     res.send({ objClass, courses });
   } catch (err) {
     res.status(500).send(err.message);
+  }
+});
+
+//GET CLASS RESOURCES
+router.get("/classes/:classId/resources", async (req, res) => {
+  try {
+    // Find the class object with the specified class ID
+    const classObject = await Class.findById(req.params.classId);
+    if (!classObject) return res.status(404).send("Class not found");
+
+    const courses = await Course.find({
+      course: { $in: classObject.courses },
+    });
+    const resources = await CourseMaterial.find({ course: { $in: courses } });
+    res.json(resources);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
@@ -192,9 +211,7 @@ router.get("/classes/:classId/done-assignments", async (req, res) => {
       status: "missing",
     });
     if (!assignments)
-      return res
-        .status(404)
-        .send("No done assignments found for this class");
+      return res.status(404).send("No done assignments found for this class");
 
     // Return the done assignments in the class
     res.send(assignments);

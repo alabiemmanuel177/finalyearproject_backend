@@ -1,28 +1,39 @@
-const CourseMaterialSchema = new Schema({
-  title: {
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+
+const fileSchema = new mongoose.Schema({
+  filename: {
     type: String,
     required: true,
   },
-  courseId: {
-    type: Schema.Types.ObjectId,
-    ref: "Course",
-    required: true,
-  },
-  file: {
+  filepath: {
     type: String,
     required: true,
   },
-  type: {
+  contentType: {
     type: String,
-    enum: ["pdf", "word", "powerpoint"],
     required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
   },
 });
 
-const CourseMaterial = mongoose.model("CourseMaterial", CourseMaterialSchema);
+const courseMaterialSchema = new Schema(
+  {
+    course: {
+      type: Schema.Types.ObjectId,
+      ref: "Course",
+      required: true,
+    },
+    title: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    files: [fileSchema],
+  },
+  { timestamps: true }
+);
 
-module.exports = CourseMaterial;
+module.exports = mongoose.model("CourseMaterial", courseMaterialSchema);

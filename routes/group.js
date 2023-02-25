@@ -34,4 +34,16 @@ router.put("/:groupId/edit", async (req, res) => {
   }
 });
 
+// Route for getting group for a particular course
+app.get("/course/:courseId/group", async (req, res) => {
+  try {
+    const courseId = req.params.courseId;
+    const group = await Group.findOne({ course: courseId });
+    if (!group) return res.status(404).send({ error: "Group not found" });
+    res.send(group);
+  } catch (error) {
+    res.status(500).send({ error: "Error getting group" });
+  }
+});
+
 module.exports = router;
