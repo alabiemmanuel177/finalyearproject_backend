@@ -55,6 +55,6 @@ connectDB();
 
 const port = process.env.ACCESS_PORT || 5700;
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server running on port ${port}.`);
 });
