@@ -44,7 +44,7 @@ app.use(cors());
 const { routes } = require("./routes/main");
 
 // Registers routes
-routes(app, io);
+routes({ app, io });
 
 app.get("/", (req, res) => {
   res.send("Server Running");
