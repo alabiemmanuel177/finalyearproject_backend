@@ -41,6 +41,7 @@ const upload = multer({
 // POST route to add course material
 router.post("/", upload.array("files"), async (req, res) => {
   try {
+    const { IOconn } = req;
     const { course, title, description } = req.body;
     const files = req.files.map((file) => ({
       filename: file.filename,
@@ -54,6 +55,8 @@ router.post("/", upload.array("files"), async (req, res) => {
       files,
     });
     const savedCourseMaterial = await newCourseMaterial.save();
+
+    IOconn.emit("LECTURER_UPLOADED_NEW_COURSES", "OK");
     res.status(201).json(savedCourseMaterial);
   } catch (error) {
     console.error(error);

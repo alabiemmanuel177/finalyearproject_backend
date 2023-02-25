@@ -40,9 +40,10 @@ const corsOptions = {
 // app.use(cors(corsOptions));
 app.use(cors());
 
-const mainRoute = require("./routes/main");
+const { routes } = require("./routes/main");
 
-app.use("/", mainRoute);
+// Registers routes
+routes(app, io);
 
 app.get("/", (req, res) => {
   res.send("Server Running");

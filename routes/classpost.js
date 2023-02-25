@@ -90,7 +90,7 @@ router.get("/posts/:courseId", async (req, res) => {
       if (post.student_id) {
         // If the post was created by a student, find the student and return their information
         const student = await Student.findById(post.student_id);
-        const studentName = `${student.firstname} ${student.lastname} ${student.middlename}`
+        const studentName = `${student.firstname} ${student.lastname} ${student.middlename}`;
         author = {
           id: student._id,
           name: studentName,

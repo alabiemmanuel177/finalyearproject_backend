@@ -11,16 +11,29 @@ const AssignmentRouter = require("./assignment");
 const ClassRouter = require("./class");
 const mainRoute = require("express").Router();
 
-mainRoute.use("/", AuthRouter);
-mainRoute.use("/student", StudentRouter);
-mainRoute.use("/admin", AdminRouter);
-mainRoute.use("/lecturer", LecturerRouter);
-mainRoute.use("/course", CourseRouter);
-mainRoute.use("/department", DepartmentRouter);
-mainRoute.use("/classpost", ClassPostRouter);
-mainRoute.use("/coursematerial", CourseMaterialRouter);
-mainRoute.use("/classcomment", ClassComment);
-mainRoute.use("/assignment", AssignmentRouter);
-mainRoute.use("/class", ClassRouter);
+function addSocketConnectionToReq(io) {
+  return async (req, res, next) => {
+    req.IOconn = io;
+    next();
+  };
+}
 
-module.exports = mainRoute;
+const routes = ({ app, io }) => {
+  app.use("/", AuthRouter);
+  app.use("/student", StudentRouter);
+  app.use("/admin", AdminRouter);
+  app.use("/lecturer", LecturerRouter);
+  app.use("/course", CourseRouter);
+  app.use("/department", DepartmentRouter);
+  app.use("/classpost", ClassPostRouter);
+  app.use(
+    "/coursematerial",
+    addSocketConnectionToReq(io),
+    CourseMaterialRouter
+  );
+  app.use("/classcomment", ClassComment);
+  app.use("/assignment", AssignmentRouter);
+  app.use("/class", ClassRouter);
+};
+
+module.exports = { routes };
