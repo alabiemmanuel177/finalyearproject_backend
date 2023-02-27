@@ -1,29 +1,27 @@
 const mongoose = require("mongoose");
 
 const AssignmentAnswerSchema = new mongoose.Schema({
-  assignmentID: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Assignment",
-  },
-  studentID: {
+  studentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Student",
     required: true,
   },
-  answer: {
+  assignmentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Assignment",
+    required: true,
+  },
+  answerText: {
     type: String,
     required: true,
   },
-  status: {
-    type: String,
-    enum: ["turned in late", "done", "missing"],
-  },
-  graded: {
-    type: Boolean,
-    default: false,
-  },
   grade: {
     type: Number,
+    default: 0,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 

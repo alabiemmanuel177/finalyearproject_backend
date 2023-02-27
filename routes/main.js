@@ -9,7 +9,6 @@ const CourseMaterialRouter = require("./coursematerial");
 const ClassComment = require("./classcomment");
 const AssignmentRouter = require("./assignment");
 const ClassRouter = require("./class");
-const mainRoute = require("express").Router();
 
 function addSocketConnectionToReq(io) {
   return async (req, res, next) => {
@@ -23,16 +22,16 @@ const routes = ({ app, io }) => {
   app.use("/student", StudentRouter);
   app.use("/admin", AdminRouter);
   app.use("/lecturer", LecturerRouter);
-  app.use("/course", CourseRouter);
-  app.use("/department", DepartmentRouter);
-  app.use("/classpost", ClassPostRouter);
+  app.use("/course", addSocketConnectionToReq(io), CourseRouter);
+  app.use("/department", addSocketConnectionToReq(io), DepartmentRouter);
+  app.use("/classpost", addSocketConnectionToReq(io), ClassPostRouter);
   app.use(
     "/coursematerial",
     addSocketConnectionToReq(io),
     CourseMaterialRouter
   );
-  app.use("/classcomment", ClassComment);
-  app.use("/assignment", AssignmentRouter);
+  app.use("/classcomment", addSocketConnectionToReq(io), ClassComment);
+  app.use("/assignment", addSocketConnectionToReq(io), AssignmentRouter);
   app.use("/class", ClassRouter);
 };
 

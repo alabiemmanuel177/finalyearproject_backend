@@ -1,58 +1,69 @@
 const router = require("express").Router();
 const Assignment = require("../models/Assignment");
 const AssignmentAnswer = require("../models/AssignmentAnswer");
-
+const Student = require("../models/Student");
 // Route to post assignment
-router.post("/", (req, res) => {
-  const newAssignment = new Assignment({
-    assignmentQuestion: req.body.assignmentQuestion,
-    dueDate: req.body.dueDate,
-    courseID: req.body.courseID,
-    mark: req.body.mark,
-    title: req.body.title,
-    status: req.body.status,
-  });
+router.post("/", async (req, res) => {
+  try {
+    const { title, description, dueDate, courseId, creatorId, grade } =
+      req.body;
 
-  newAssignment.save((error, assignment) => {
-    if (error) {
-      res.status(500).send(error);
-    } else {
-      res.status(200).json(assignment);
-    }
-  });
+    const assignment = new Assignment({
+      title,
+      description,
+      dueDate,
+      courseId,
+      creatorId,
+      grade,
+    });
+
+    await assignment.save();
+
+    res.status(201).json({ message: "Assignment created successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
 
 // Route to post assignment answer
-router.post("/assignmentAnswer", (req, res) => {
-  const newAssignmentAnswer = new AssignmentAnswer({
-    assignmentID: req.body.assignmentID,
-    studentID: req.body.studentID,
-    answer: req.body.answer,
-    status: req.body.status,
-  });
+router.post("/assignment-answer/:assignmentId", async (req, res) => {
+  try {
+    // Get the assignment ID from the URL parameter
+    const assignmentId = req.params.assignmentId;
 
-  newAssignmentAnswer.save((error, assignmentAnswer) => {
-    if (error) {
-      res.status(500).send(error);
-    } else {
-      res.status(200).json(assignmentAnswer);
-    }
-  });
-});
+    // Find the assignment to check its due date
+    const assignment = await Assignment.findById(assignmentId);
 
-//UPDATE ASSIGNMENT
-router.put("/assignments/:id", function (req, res) {
-  Assignment.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true },
-    function (err, updatedAssignment) {
-      if (err) {
-        res.send(err);
-      }
-      res.json(updatedAssignment);
+    // Check if the assignment is still accepting submissions
+    const now = new Date();
+    const dueDate = new Date(assignment.dueDate);
+    const submissionPeriodEnd = new Date(dueDate.getTime() + 15 * 60 * 1000); // 15 mins after due date
+    if (now > submissionPeriodEnd) {
+      return res.status(400).json({ message: "Submission period has ended" });
     }
-  );
+    const isLateSubmission = now > dueDate;
+
+    // Create the assignment answer document
+    const assignmentAnswer = new AssignmentAnswer({
+      studentId: req.body.studentId, // assuming you have some authentication middleware that sets req.user.id
+      assignmentId: assignmentId,
+      answerText: req.body.answerText,
+      createdAt: new Date(),
+    });
+
+    // Save the assignment answer document
+    const savedAssignmentAnswer = await assignmentAnswer.save();
+
+    // Return a response indicating whether the submission was turned in late
+    return res.status(200).json({
+      message: isLateSubmission ? "Turned in late" : "Submission successful",
+      assignmentAnswer: savedAssignmentAnswer,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 });
 
 //update assignment answer
@@ -110,6 +121,33 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// Route to get assignment using assignment id and student's answer
+router.get("/:assignmentId/:studentId", async (req, res) => {
+  try {
+    // Find the assignment using the assignment id
+    const assignment = await Assignment.findById(req.params.assignmentId);
+
+    // Find the student using the student id
+    const student = await Student.findById(req.params.studentId);
+
+    // Check if the student has submitted an answer to the assignment
+    const answer = await AssignmentAnswer.find({
+      assignmentId: assignment.assignmentId,
+    });
+
+    if (!answer) {
+      // If the student has not submitted an answer, return an error message
+      return res.status(404).json({ message: "Answer not found" });
+    }
+
+    // If the student has submitted an answer, return the assignment and the student's answer
+    res.json({ assignment, answer});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 //GET ALL ASSIGNMENT
 router.get("/", async (req, res) => {
   try {
@@ -141,42 +179,6 @@ router.post("/:assignmentId/:studentId", async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
-});
-
-//route to get missing assignment
-router.get("/courses/:courseId/assignments/missing", (req, res) => {
-  const courseId = req.params.courseId;
-  Assignment.find({ courseId: courseId, status: "missing" })
-    .then((assignments) => {
-      res.status(200).json({ assignments });
-    })
-    .catch((err) => {
-      res.status(400).json({ error: err });
-    });
-});
-
-//route to get assigned assignment
-router.get("/courses/:courseId/assignments/assigned", (req, res) => {
-  const courseId = req.params.courseId;
-  Assignment.find({ courseId: courseId, status: "assigned" })
-    .then((assignments) => {
-      res.status(200).json({ assignments });
-    })
-    .catch((err) => {
-      res.status(400).json({ error: err });
-    });
-});
-
-//route to get done assignment
-router.get("/courses/:courseId/assignments/done", (req, res) => {
-  const courseId = req.params.courseId;
-  Assignment.find({ courseId: courseId, status: "done" })
-    .then((assignments) => {
-      res.status(200).json({ assignments });
-    })
-    .catch((err) => {
-      res.status(400).json({ error: err });
-    });
 });
 
 module.exports = router;
