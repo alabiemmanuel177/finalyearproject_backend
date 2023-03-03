@@ -5,11 +5,13 @@ const bcrypt = require("bcryptjs");
 const Lecturer = require("../models/Lecturer");
 
 //REGISTER ADMIN
-router.post("/adminRegister", async (req, res) => {
+router.post("/admin/register", async (req, res) => {
   try {
     const salt = await bcrypt.genSalt(10);
     const hashedPass = await bcrypt.hash(req.body.password, salt);
     const newAdmin = new Admin({
+      name: req.body.name,
+      email: req.body.email,
       username: req.body.username,
       password: hashedPass,
     });
@@ -21,7 +23,7 @@ router.post("/adminRegister", async (req, res) => {
 });
 
 //REGISTER STUDENT
-router.post("/studentRegister", async (req, res) => {
+router.post("/student/register", async (req, res) => {
   try {
     const salt = await bcrypt.genSalt(10);
     const hashedPass = await bcrypt.hash(req.body.password, salt);
@@ -48,7 +50,7 @@ router.post("/studentRegister", async (req, res) => {
 });
 
 //REGISTER LECTURER
-router.post("/lecturerRegister", async (req, res) => {
+router.post("/lecturer/register", async (req, res) => {
   try {
     const salt = await bcrypt.genSalt(10);
     const hashedPass = await bcrypt.hash(req.body.password, salt);
@@ -68,7 +70,7 @@ router.post("/lecturerRegister", async (req, res) => {
 });
 
 //LECTURER LOGIN
-router.post("/lecturerLogin", async (req, res) => {
+router.post("/lecturer/login", async (req, res) => {
   try {
     const lecturer = await Lecturer.findOne({ email: req.body.email });
     if (!lecturer) {

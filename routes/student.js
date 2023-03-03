@@ -144,60 +144,57 @@ router.get("/assignments/submitted/:studentId", async (req, res) => {
     res.status(500).send("Server error");
   }
 });
+// Helper function to get course IDs for a given student
+const getCourseIds = async (studentId) => {
+  const courses = await Student.findById(studentId)
+    .populate("class")
+    .populate({ path: "class", populate: { path: "courses" } })
+    .select("class")
+    .lean();
+  const courseIds = courses.class.courses.map((course) => course._id);
+  return courseIds;
+};
 
-// Get all assignments not submitted by a student for courses in their class but can still be submitted
-router.get("/assignments/missing/:studentId", async (req, res) => {
-  const fifteenMinutes = 15 * 60 * 1000; // in milliseconds
+// // Get all assignments not submitted by a student for courses in their class but can still be submitted
+// router.get("/assignments/missing/:studentId", async (req, res) => {
+//   const studentId = req.params.studentId;
+//   const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
 
-  try {
-    const studentId = req.params.studentId;
-    const student = await Student.findById(studentId);
-    const studentClass = await Class.findById(student.class).populate(
-      "courses"
-    );
-    const courseIds = studentClass.courses.map((course) => course._id);
+//   try {
+//     // Get course IDs for the student
+//     const courseIds = await getCourseIds(studentId);
 
-    const currentDate = new Date();
+//     // Get assignments due that the student has not answered
+//     const assignments = await Assignment.find({
+//       courseId: { $in: courseIds },
+//       dueDate: { $lt: new Date() },
+//     })
+//       .populate({ path: "creatorId", select: "firstname lastname" })
+//       .lean();
 
-    const assignments = await Assignment.find({
-      courseId: { $in: courseIds },
-      dueDate: { $gt: currentDate },
-    });
+//     const answeredAssignmentIds = await AssignmentAnswer.distinct(
+//       "assignmentId",
+//       { studentId }
+//     );
 
-    const assignmentAnswers = await AssignmentAnswer.find({
-      studentId: req.params.studentId,
-    });    
+//     const filteredAssignments = assignments.filter(
+//       (assignment) =>
+//         !answeredAssignmentIds.includes(assignment._id) &&
+//         assignment.dueDate > fifteenMinutesAgo
+//     );
 
-    // Filter the assignments to exclude those that the student has already answered
-    const uncompletedAssignments = assignments.filter((assignment) => {
-      return !assignmentAnswers.some(
-        (answer) => answer.assignmentId.toString() === assignment._id.toString()
-      );
-    });
-    console.log(assignments);
-
-    const currentTime = currentDate.getTime();
-
-    const notSubmittedAndLateAssignments = uncompletedAssignments.filter(
-      (assignment) => {
-        const assignmentDueTime = assignment.dueDate.getTime();
-        const timeDifference = currentTime - assignmentDueTime;
-        return timeDifference > 0 && timeDifference <= fifteenMinutes;
-      }
-    );
-
-    res.json(notSubmittedAndLateAssignments);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+//     res.status(200).json(filteredAssignments);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Server error" });
+//   }
+// });
 
 // Get all assignments students can no longer submit
 // Route to get all assignments that a student hasn't submitted for the courses he is offering which are in the class schema and can no longer submit
 router.get("/assignments/missed/:studentId", async (req, res) => {
   try {
-    const studentId = req.params.studentId; // assuming user authentication middleware sets the user ID in req.user.id
+    const studentId = req.params.studentId;
     const student = await Student.findById(studentId);
     const studentClass = await Class.findById(student.class).populate(
       "courses"
@@ -206,19 +203,17 @@ router.get("/assignments/missed/:studentId", async (req, res) => {
     const courseIds = studentClass.courses.map((course) => course._id);
     const assignments = await Assignment.find({
       courseId: { $in: courseIds },
-    });
+    }).populate("courseId");
     // Find all assignment answers for the student
     const assignmentAnswers = await AssignmentAnswer.find({
       studentId: req.params.studentId,
-    });
-
+    })
     // Filter the assignments to exclude those that the student has already answered
     const uncompletedAssignments = assignments.filter((assignment) => {
       return !assignmentAnswers.some(
         (answer) => answer.assignmentId.toString() === assignment._id.toString()
       );
     });
-
     res.status(200).json(uncompletedAssignments);
   } catch (error) {
     console.error(error);

@@ -9,6 +9,7 @@ const CourseMaterialRouter = require("./coursematerial");
 const ClassComment = require("./classcomment");
 const AssignmentRouter = require("./assignment");
 const ClassRouter = require("./class");
+const NoticeRouter = require("./notice");
 
 function addSocketConnectionToReq(io) {
   return async (req, res, next) => {
@@ -33,6 +34,7 @@ const routes = ({ app, io }) => {
   app.use("/classcomment", addSocketConnectionToReq(io), ClassComment);
   app.use("/assignment", addSocketConnectionToReq(io), AssignmentRouter);
   app.use("/class", ClassRouter);
+  app.use("/notice", NoticeRouter);
 };
 
 module.exports = { routes };
