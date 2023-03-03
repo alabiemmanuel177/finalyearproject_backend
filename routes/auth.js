@@ -91,7 +91,7 @@ router.post("/lecturer/login", async (req, res) => {
 });
 
 //STUDENT LOGIN
-router.post("/studentLogin", async (req, res) => {
+router.post("/student/login", async (req, res) => {
   try {
     const student = await Student.findOne({ matricno: req.body.matricno });
     if (!student) {
