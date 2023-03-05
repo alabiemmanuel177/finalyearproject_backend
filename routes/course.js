@@ -1,5 +1,8 @@
 const router = require("express").Router();
 const Course = require("../models/Course");
+const Lecturer = require("../models/Lecturer");
+const Student = require("../models/Student");
+const Class = require("../models/Class");
 
 //CREATE COURSE
 router.post("/", async (req, res) => {
@@ -72,6 +75,33 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
+// Get the lecturers and students for a particular course
+router.get("/:id/members", async (req, res) => {
+  try {
+    const courseId = req.params.id;
 
+    // Find the course
+    const course = await Course.findById(courseId).populate('lecturer');
 
+    // If the course is not found, return an error
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    // Find all the classes for the course
+    const classes = await Class.find({ course: courseId });
+
+    // Find all the students for the classes
+    const students = await Student.find({ class: { $in: classes.map(c => c._id) } });
+
+    // Return the lecturer and students
+    return res.json({
+      lecturer: course.lecturer,
+      students: students,
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 module.exports = router;

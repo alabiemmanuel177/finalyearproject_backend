@@ -207,7 +207,7 @@ router.get("/assignments/missed/:studentId", async (req, res) => {
     // Find all assignment answers for the student
     const assignmentAnswers = await AssignmentAnswer.find({
       studentId: req.params.studentId,
-    })
+    });
     // Filter the assignments to exclude those that the student has already answered
     const uncompletedAssignments = assignments.filter((assignment) => {
       return !assignmentAnswers.some(

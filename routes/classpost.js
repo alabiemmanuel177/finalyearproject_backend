@@ -107,7 +107,7 @@ router.get("/posts/:courseId", async (req, res) => {
       }
 
       // Add the post content and author information to the postData array
-      postData.push({ content: post.content, author });
+      postData.push({ content: post, author,});
     }
 
     // Return the postData array

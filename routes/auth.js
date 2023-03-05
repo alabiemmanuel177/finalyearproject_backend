@@ -72,7 +72,7 @@ router.post("/lecturer/register", async (req, res) => {
 //LECTURER LOGIN
 router.post("/lecturer/login", async (req, res) => {
   try {
-    const lecturer = await Lecturer.findOne({ email: req.body.email });
+    const lecturer = await Lecturer.findOne({ email: req.body.email }).populate("department");
     if (!lecturer) {
       return res.status(400).json("Wrong credential");
     }
