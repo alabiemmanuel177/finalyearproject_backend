@@ -3,9 +3,11 @@ const ClassComment = require("../models/ClassComment");
 
 //CREATE CLASSCOMMENT
 router.post("/", async (req, res) => {
+  const { IOconn } = req;
   const newClassComment = new ClassComment(req.body);
   try {
     const savedClassComment = await newClassComment.save();
+    IOconn.emit("NEW_COMMENT", "OK");
     return res.status(200).json(savedClassComment);
   } catch (err) {
     return res.status(500).json(err);

@@ -3,6 +3,8 @@ const Course = require("../models/Course");
 const Lecturer = require("../models/Lecturer");
 const Student = require("../models/Student");
 const Class = require("../models/Class");
+const CourseMaterial = require('../models/CourseMaterial');
+const Group = require("../models/Group");
 
 //CREATE COURSE
 router.post("/", async (req, res) => {
@@ -104,4 +106,62 @@ router.get("/:id/members", async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
+// Get CourseMaterial for a particular course
+router.get('/:id/materials', async (req, res) => {
+  try {
+    const courseId = req.params.id;
+
+    // Find the course
+    const course = await Course.findById(courseId);
+
+    // If the course is not found, return an error
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    // Find the course materials for the course
+    const courseMaterials = await CourseMaterial.find({ course: courseId });
+
+    // Return the course materials
+    return res.json({
+      course: course,
+      materials: courseMaterials,
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+router.get("/:courseId/groups", async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const groups = await Group.find({ course: courseId });
+    res.json(groups);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+// Route to get the class ID from a course ID
+router.get("/:courseId/class", async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.courseId);
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+    const classId = await Class.findOne({ courses: course._id });
+    if (!classId) {
+      return res.status(404).json({ message: "Class not found" });
+    }
+    return res.status(200).json({ classId: classId._id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
 module.exports = router;

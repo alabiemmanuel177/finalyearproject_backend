@@ -72,7 +72,9 @@ router.post("/lecturer/register", async (req, res) => {
 //LECTURER LOGIN
 router.post("/lecturer/login", async (req, res) => {
   try {
-    const lecturer = await Lecturer.findOne({ email: req.body.email }).populate("department");
+    const lecturer = await Lecturer.findOne({ email: req.body.email }).populate(
+      "department"
+    );
     if (!lecturer) {
       return res.status(400).json("Wrong credential");
     }
@@ -95,11 +97,13 @@ router.post("/student/login", async (req, res) => {
   try {
     const student = await Student.findOne({ matricno: req.body.matricno });
     if (!student) {
-      return res.status(400).json("No Student with this Matric No");
+      return res
+        .status(400)
+        .json({ message: "No Student with this Matric No" });
     }
     const validated = await bcrypt.compare(req.body.password, student.password);
     if (!validated) {
-      return res.status(400).json("Wrong credentials!");
+      return res.status(400).json({ message: "Wrong credentials!" });
     }
     const { password, ...others } = student._doc;
     return res.status(200).json(others);
@@ -113,11 +117,11 @@ router.post("/adminLogin", async (req, res) => {
   try {
     const admin = await Admin.findOne({ email: req.body.email });
     if (!admin) {
-      return res.status(400).json("Wrong credential");
+      return res.status(400).json({ message: "Wrong credentials!" });
     }
     const validated = await bcrypt.compare(req.body.password, admin.password);
     if (!validated) {
-      return res.status(400).json("Wrong credentials!");
+      return res.status(400).json({ message: "Wrong credentials!" });
     }
     const { password, ...others } = admin._doc;
     return res.status(200).json(others);

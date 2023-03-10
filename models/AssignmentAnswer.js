@@ -15,6 +15,14 @@ const AssignmentAnswerSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  answerType: {
+    type: String,
+    enum: ["text", "file"],
+    required: true,
+  },
+  answerFile: {
+    type: String,
+  },
   grade: {
     type: Number,
     default: 0,

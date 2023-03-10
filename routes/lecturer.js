@@ -190,4 +190,25 @@ router.post("/change-password", async (req, res) => {
   }
 });
 
+//route to get assignments for all the courses a lecturer is offering
+router.get("/assignments/:lecturerId", async (req, res) => {
+  try {
+    const lecturerId = req.params.lecturerId;
+
+    // Find all courses taught by the given lecturer
+    const courses = await Course.find({ lecturer: lecturerId });
+
+    // Extract the course IDs from the courses
+    const courseIds = courses.map((course) => course._id);
+
+    // Find all assignments for the given courses
+    const assignments = await Assignment.find({ course: { $in: courseIds } });
+
+    // Return the assignments
+    res.json(assignments);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
 module.exports = router;

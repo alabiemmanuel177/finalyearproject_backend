@@ -5,9 +5,11 @@ const Student = require("../models/Student");
 
 //CREATE CLASSPOST
 router.post("/", async (req, res) => {
+  const { IOconn } = req;
   const newClassPost = new ClassPost(req.body);
   try {
     const savedClassPost = await newClassPost.save();
+    IOconn.emit("NEW_CLASSPOST", "OK");
     return res.status(200).json(savedClassPost);
   } catch (err) {
     return res.status(500).json(err);
@@ -107,7 +109,7 @@ router.get("/posts/:courseId", async (req, res) => {
       }
 
       // Add the post content and author information to the postData array
-      postData.push({ content: post, author,});
+      postData.push({ content: post, author });
     }
 
     // Return the postData array

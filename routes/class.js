@@ -6,9 +6,11 @@ const CourseMaterial = require("../models/CourseMaterial");
 
 //CREATE CLASS
 router.post("/", async (req, res) => {
+  const { IOconn } = req;
   const newClass = new Class(req.body);
   try {
     const savedClass = await newClass.save();
+    IOconn.emit("CLASS_CREATED", "OK");
     return res.status(200).json(savedClass);
   } catch (err) {
     return res.status(500).json(err);
@@ -34,8 +36,10 @@ router.put("/:id", async (req, res) => {
 //DELETE CLASS
 router.delete("/:id", async (req, res) => {
   try {
+    const { IOconn } = req;
     const Cclass = await Class.findById(req.params.id);
     await Cclass.delete();
+    IOconn.emit("CLASS_DELETED", "OK");
     return res.status(200).json("Class has been deleted...");
   } catch (err) {
     return res.status(500).json(err);
@@ -105,7 +109,7 @@ router.get("/classes/:classId/resources", async (req, res) => {
     const courses = await Course.find({
       course: { $in: classObject.courses },
     });
-    const resources = await CourseMaterial.find({ course: { $in: courses } });
+    const resources = await CourseMaterial.find({ course: { $in: courses } }).populate("course");
     res.json(resources);
   } catch (error) {
     console.error(error);

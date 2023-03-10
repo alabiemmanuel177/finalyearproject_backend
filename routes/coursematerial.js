@@ -65,14 +65,14 @@ router.post("/", upload.array("files"), async (req, res) => {
 });
 
 // Route for getting all course materials for a particular course
-router.get("/course/course:id/materials", (req, res) => {
+router.get("/course/:id/materials", (req, res) => {
   CourseMaterial.find({ courseId: req.params.id }, (err, materials) => {
     if (err) {
       res.status(500).send(err);
     } else {
       res.status(200).json(materials);
     }
-  });
+  }).populate("course");
 });
 
 //Route to get a particular course material

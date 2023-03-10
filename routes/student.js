@@ -4,7 +4,6 @@ const Student = require("../models/Student");
 const Assignment = require("../models/Assignment");
 const AssignmentAnswer = require("../models/AssignmentAnswer");
 const Class = require("../models/Class");
-const Course = require("../models/Course");
 
 //UPDATE STUDENT
 router.put("/:id", async (req, res) => {
