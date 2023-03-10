@@ -122,25 +122,23 @@ router.get("/assignments/submitted/:studentId", async (req, res) => {
     const studentId = req.params.studentId; // assuming the student ID is stored in the `id` field of the `req.user` object
     // Find the student
     const student = await Student.findById(studentId);
-    const studentClass = await Class.findById(student.class).populate(
-      "courses"
-    );
-    // Get an array of course IDs from the class schema
-    const courseIds = studentClass.courses.map((course) => course._id);
-    const assignmentAnswers = await AssignmentAnswer.find({
-      student: studentId,
-    });
-    const submittedAssignmentIds = assignmentAnswers.map(
-      (answer) => answer.assignmentId
-    );
-    const submittedAssignments = await Assignment.find({
-      courseId: { $in: courseIds },
-      _id: { $in: submittedAssignmentIds },
-    }).populate("courseId");
-    res.json(submittedAssignments);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error");
+    const classId = student.class._id;
+    const assignments = await AssignmentAnswer.find({ studentId: student._id })
+      .populate({
+        path: "assignmentId",
+        match: { courseId: { $in: student.class.courses } },
+        populate: {
+          path: "courseId",
+          model: "Course",
+        },
+      })
+      .populate("assignmentId")
+      .exec();
+
+    res.json(assignments);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 // Helper function to get course IDs for a given student
@@ -193,29 +191,34 @@ const getCourseIds = async (studentId) => {
 // Route to get all assignments that a student hasn't submitted for the courses he is offering which are in the class schema and can no longer submit
 router.get("/assignments/missed/:studentId", async (req, res) => {
   try {
-    const studentId = req.params.studentId;
-    const student = await Student.findById(studentId);
-    const studentClass = await Class.findById(student.class).populate(
-      "courses"
-    );
-    // Get an array of course IDs from the class schema
-    const courseIds = studentClass.courses.map((course) => course._id);
+    const student = await Student.findById(req.params.studentId)
+      .populate({
+        path: "class",
+        populate: {
+          path: "courses",
+          model: "Course",
+        },
+      })
+      .exec();
+
+    const classId = student.class._id;
+    const courses = student.class.courses;
+
     const assignments = await Assignment.find({
-      courseId: { $in: courseIds },
-    }).populate("courseId");
-    // Find all assignment answers for the student
-    const assignmentAnswers = await AssignmentAnswer.find({
-      studentId: req.params.studentId,
-    });
-    // Filter the assignments to exclude those that the student has already answered
-    const uncompletedAssignments = assignments.filter((assignment) => {
-      return !assignmentAnswers.some(
-        (answer) => answer.assignmentId.toString() === assignment._id.toString()
-      );
-    });
-    res.status(200).json(uncompletedAssignments);
-  } catch (error) {
-    console.error(error);
+      courseId: { $in: courses },
+      dueDate: { $lt: new Date() },
+      _id: {
+        $nin: await AssignmentAnswer.distinct("assignmentId", {
+          studentId: student._id,
+        }),
+      },
+    })
+      .populate("courseId")
+      .exec();
+
+    res.json(assignments);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
 });
