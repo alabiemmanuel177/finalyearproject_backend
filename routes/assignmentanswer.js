@@ -1,65 +1,80 @@
 const express = require("express");
 const router = express.Router();
-const cloudinary = require("cloudinary").v2;
+const { uploader } = require("../util/cloudinary");
 const Assignment = require("../models/Assignment");
 const AssignmentAnswer = require("../models/AssignmentAnswer");
 const AssignmentAnswerFile = require("../models/AssignmentAnswer");
+const multer = require("multer");
+const fs = require("fs");
 
-// configure cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+/**
+ * This should be properly extracted into a utility function
+ */
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, new Date().toISOString() + "-" + file.originalname);
+  },
+});
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
+    cb(null, true);
+  } else {
+    //reject file
+    cb({ message: "Unsupported file format" }, false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 1024 * 1024 * 10 },
+  fileFilter: fileFilter,
 });
 
 // define route handler for posting an assignment answer
-router.post("/:id/:studentId", async (req, res) => {
+router.post("/:id/:studentId", upload.array("file"), async (req, res) => {
   try {
     // get the assignment ID from the request params
     const assignmentId = req.params.id;
 
     // check if the assignment has already passed its due date
     const assignment = await Assignment.findById(assignmentId);
+
     const currentDate = new Date();
     if (currentDate > assignment.dueDate) {
       return res.status(400).send({ message: "Assignment is past due date" });
     }
 
-    // check if file is present in the request
-    if (!req.files || !req.files.file) {
-        return res.status(400).send("No file uploaded");
-      }
-
     // upload file to cloudinary and get the file URL, name, and type
-    const file = req.files.file;
-    const fileType = file.mimetype;
-    const allowedFileTypes = [
-      ".jpg",
-      ".png",
-      ".webp",
-      ".jpeg",
-      ".ppt",
-      ".pptx",
-      "docx",
-      "xlsx",
-    ];
-    if (!allowedFileTypes.includes(fileType)) {
-      return res
-        .status(400)
-        .send({
-          message:
-            "Invalid file type. Allowed file types are .jpg, .png, .webp, .jpeg, .ppt, .pptx, docx, xlsx",
-        });
+    // const allowedFileTypes = [
+    //   "jpg",
+    //   "png",
+    //   "webp",
+    //   "jpeg",
+    //   "ppt",
+    //   "pptx",
+    //   "docx",
+    //   "xlsx",
+    // ];
+    //const uploader = async (path) => await uploads(path, "Assignments");
+    let uploadResult = {};
+    for (const file of req.files) {
+      const { path, mimetype } = file;
+      const res = await uploader(path, "Assignments");
+      console.log({ cloudinary_res: res });
+      //Perform logic to extract fileType
+      uploadResult = { ...res, fileType: mimetype };
+      fs.unlinkSync(path);
     }
-    const result = await cloudinary.uploader.upload(file.tempFilePath);
-    const fileUrl = result.secure_url;
-    const fileName = result.original_filename;
 
     // create an AssignmentAnswerFile document with the file information
     const assignmentAnswerFile = new AssignmentAnswerFile({
-      fileUrl,
-      fileType,
-      fileName,
+      fileUrl: uploadResult.secure_url,
+      fileType: uploadResult.fileType,
+      fileName: uploadResult.original_filename,
     });
     await assignmentAnswerFile.save();
 
@@ -73,12 +88,12 @@ router.post("/:id/:studentId", async (req, res) => {
     await assignmentAnswer.save();
 
     // send success response
-    res
+    return res
       .status(201)
       .send({ message: "Assignment answer submitted successfully" });
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Internal server error" });
+    return res.status(500).send({ message: "Internal server error" });
   }
 });
 
