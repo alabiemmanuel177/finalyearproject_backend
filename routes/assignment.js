@@ -2,8 +2,6 @@ const router = require("express").Router();
 const Assignment = require("../models/Assignment");
 const AssignmentAnswer = require("../models/AssignmentAnswer");
 const Student = require("../models/Student");
-const multer = require("multer");
-const upload = multer({ dest: "uploads/Assignment Answer" }); // configure Multer to use the `uploads` folder for storing files
 
 // Route to post assignment
 router.post("/", async (req, res) => {
@@ -30,73 +28,6 @@ router.post("/", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
-// Route to post assignment answer
-router.post(
-  "/assignment-answer/:assignmentId",
-  upload.single("file"),
-  async (req, res) => {
-    try {
-      const { IOconn } = req;
-
-      const assignment = await Assignment.findById(req.params.assignmentId);
-      if (!assignment) {
-        return res.status(404).send({ error: "Assignment not found" });
-      }
-      const student = await Student.findById(req.body.studentId);
-      if (!student) {
-        return res.status(404).send({ error: "Student not found" });
-      }
-      // Check if the assignment is still accepting submissions
-      const now = new Date();
-      const dueDate = new Date(assignment.dueDate);
-      const submissionPeriodEnd = new Date(dueDate.getTime() + 15 * 60 * 1000); // 15 mins after due date
-      if (now > submissionPeriodEnd) {
-        return res.status(400).json({ message: "Submission period has ended" });
-      }
-      const isLateSubmission = now > dueDate;
-      const { studentId, answerText, grade } = req.body;
-
-      let answer;
-      if (req.file) {
-        // if there's a file attached, create a new answer object with the file path
-        answer = new AssignmentAnswer({
-          studentId,
-          assignmentId: req.params.assignmentId,
-          file: req.file.path,
-          grade,
-        });
-      } else {
-        // if there's no file, create an answer object with the text answer
-        answer = new AssignmentAnswer({
-          studentId,
-          assignmentId: req.params.assignmentId,
-          answerText,
-          grade,
-        });
-      }
-
-      // const assignmentAnswer = new AssignmentAnswer({
-      //   studentId: req.body.studentId, // assuming you have some authentication middleware that sets req.user.id
-      //   assignmentId: assignmentId,
-      //   answerText: req.body.answerText,
-      //   createdAt: new Date(),
-      // });
-
-      // Save the assignment answer document
-      const savedAssignmentAnswer = await answer.save();
-      IOconn.emit("ASSIGNMENT_ANSWER_UPLOADED", "OK");
-      // Return a response indicating whether the submission was turned in late
-      return res.status(200).json({
-        message: isLateSubmission ? "Turned in late" : "Submission successful",
-        assignmentAnswer: savedAssignmentAnswer,
-      });
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  }
-);
 
 //update assignment answer
 router.put("/assignment-answers/:id", function (req, res) {
