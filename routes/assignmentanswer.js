@@ -5,7 +5,7 @@ const Assignment = require("../models/Assignment");
 const AssignmentAnswer = require("../models/AssignmentAnswer");
 const multer = require("multer");
 const fs = require("fs");
-const AssignmentAnswerFIle = require("../models/AssignmentAnswerFIle");
+const AssignmentAnswerFile = require("../models/AssignmentAnswerFile");
 
 /**
  * This should be properly extracted into a utility function
@@ -81,7 +81,7 @@ router.post(
       }
 
       // create an AssignmentAnswerFile document with the file information
-      const assignmentAnswerFile = new AssignmentAnswerFIle({
+      const assignmentAnswerFile = new AssignmentAnswerFile({
         fileUrl: uploadResult.secure_url,
         fileType: uploadResult.fileType,
         fileName: uploadResult.fileName,
