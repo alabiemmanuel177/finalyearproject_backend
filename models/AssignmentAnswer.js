@@ -25,23 +25,4 @@ const AssignmentAnswerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const AssignmentAnswerFileSchema = new mongoose.Schema(
-  {
-    url: {
-      type: String,
-      required: true,
-    },
-    fileType: {
-      type: String,
-      enum: ["document", "slide", "sheet", "drawing", "pdf"],
-      required: true,
-    },
-    fileName: {
-      type: String,
-      required: true,
-    },
-  },
-  { timestamps: true }
-);
-
 module.exports = mongoose.model("AssignmentAnswer", AssignmentAnswerSchema);
