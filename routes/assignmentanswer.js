@@ -74,7 +74,7 @@ router.post(
       for (const file of req.files) {
         const { path, mimetype } = file;
         const res = await uploader(path, "Assignments");
-        console.log({ cloudinary_res: res });
+        // console.log({ cloudinary_res: res });
         //Perform logic to extract fileType
         uploadResult = { ...res, fileType: mimetype };
         fs.unlinkSync(path);

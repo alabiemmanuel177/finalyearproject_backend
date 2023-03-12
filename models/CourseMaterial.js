@@ -1,21 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const fileSchema = new mongoose.Schema({
-  filename: {
-    type: String,
-    required: true,
-  },
-  filepath: {
-    type: String,
-    required: true,
-  },
-  contentType: {
-    type: String,
-    required: true,
-  },
-});
-
 const courseMaterialSchema = new Schema(
   {
     course: {
@@ -26,12 +11,19 @@ const courseMaterialSchema = new Schema(
     title: {
       type: String,
       required: true,
+      unique: true,
     },
     description: {
       type: String,
       required: true,
     },
-    files: [fileSchema],
+    files: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "CourseMaterialFile",
+        required: true,
+      },
+    ],
   },
   { timestamps: true }
 );

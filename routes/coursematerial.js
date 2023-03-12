@@ -2,39 +2,56 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const CourseMaterial = require("../models/CourseMaterial");
+const CourseMaterialFile = require("../models/CourseMaterialFile");
+const fs = require("fs");
+const { uploader } = require("../util/cloudinary");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./uploads/");
+    cb(null, "./uploads/CourseMaterials");
   },
-  filename: (req, file, cb) => {
-    const filename = `${file.originalname}`;
-    cb(null, filename); // Rename file with a timestamp and original name
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
   },
 });
 
 const fileFilter = (req, file, cb) => {
   if (
+    file.mimetype === "image/jpeg" ||
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/webp" ||
+    file.mimetype === "image/jpg" ||
     file.mimetype === "application/pdf" ||
     file.mimetype === "application/msword" ||
     file.mimetype === "application/vnd.ms-powerpoint" ||
     file.mimetype ===
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     file.mimetype ===
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
+    file.mimetype === "application/vnd.ms-excel" ||
+    file.mimetype ===
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+    file.mimetype === "application/vnd.ms-powerpoint" ||
+    file.mimetype ===
+      "application/vnd.openxmlformats-officedocument.presentationml.slideshow" ||
+    file.mimetype === "video/x-flv" ||
+    file.mimetype === "video/mp4" ||
+    file.mimetype === "video/3gpp" ||
+    file.mimetype === "audio/mp4" ||
+    file.mimetype === "audio/mpeg" ||
+    file.mimetype === "audio/x-aiff" ||
+    file.mimetype === "video/quicktime" ||
+    file.mimetype === "text/html"
   ) {
     cb(null, true);
   } else {
-    cb(new Error("Invalid file type"), false);
+    cb(new Error("Unsupported file format"), false);
   }
 };
 
-// Multer upload configuration
 const upload = multer({
   storage: storage,
-  limits: {
-    fileSize: 1024 * 1024 * 5,
-  },
+  limits: { fileSize: 1024 * 1024 * 50 },
   fileFilter: fileFilter,
 });
 
@@ -43,16 +60,35 @@ router.post("/", upload.array("files"), async (req, res) => {
   try {
     const { IOconn } = req;
     const { course, title, description } = req.body;
-    const files = req.files.map((file) => ({
-      filename: file.filename,
-      filepath: file.path,
-      contentType: file.mimetype,
-    }));
+
+    let uploadResults = [];
+    let uploadResult = {};
+    for (const file of req.files) {
+      const { path, mimetype } = file;
+      const res = await uploader(path, "BUCODEL/Course Materials");
+      // console.log({ cloudinary_res: res });
+      //Perform logic to extract fileType
+      uploadResult = { ...res, fileType: mimetype };
+      uploadResults.push(uploadResult);
+      fs.unlinkSync(path);
+    }
+
+    const fileIds = [];
+    for (const uploadResult of uploadResults) {
+      const courseMaterialFile = new CourseMaterialFile({
+        fileUrl: uploadResult.secure_url,
+        fileType: uploadResult.fileType,
+        fileName: uploadResult.fileName,
+      });
+      await courseMaterialFile.save();
+      fileIds.push(courseMaterialFile._id);
+    }
+
     const newCourseMaterial = new CourseMaterial({
       course,
       title,
       description,
-      files,
+      files: fileIds,
     });
     const savedCourseMaterial = await newCourseMaterial.save();
 
