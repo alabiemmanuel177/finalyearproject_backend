@@ -8,6 +8,7 @@ const Assignment = require("../models/Assignment");
 
 //UPDATE LECTURER
 router.put("/:id", async (req, res) => {
+  const { IOconn } = req;
   if (req.body.lecturerId === req.params.id) {
     if (req.body.password) {
       const salt = await bcrypt.genSalt(10);
@@ -21,6 +22,7 @@ router.put("/:id", async (req, res) => {
         },
         { new: true }
       );
+      IOconn.emit("LECTURER_UPDATED", "OK");
       return res.status(200).json(updatedLecturer);
     } catch (err) {
       return res.status(500).json(err);
@@ -32,11 +34,13 @@ router.put("/:id", async (req, res) => {
 
 //DELETE LECTURER
 router.delete("/:id", async (req, res) => {
+  const { IOconn } = req;
   if (req.body.lecturerId === req.params.id) {
     try {
       const lecturer = await Lecturer.findById(req.params.id);
       try {
         await lecturer.findByIdAndDelete(req.params.id);
+        IOconn.emit("LECTURER_DELETED", "OK");
         return res.status(200).json("Lecturer has been deleted");
       } catch (err) {
         return res.status(500).json(err);
@@ -134,7 +138,6 @@ router.get("/assignments/:lecturerId", async (req, res) => {
 //CHANGE PASSWORD Lecturer
 router.post("/change-password", async (req, res) => {
   const { id, oldPassword, newPassword } = req.body;
-
   try {
     const lecturer = await Lecturer.findOne({ _id: id });
 

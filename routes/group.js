@@ -25,6 +25,7 @@ function shuffle(array) {
 }
 
 router.post("/:courseId/:classId/:capacity", async (req, res) => {
+  const { IOconn } = req;
   const courseId = req.params.courseId;
   const classId = req.params.classId;
   const capacity = parseInt(req.params.capacity);
@@ -54,7 +55,7 @@ router.post("/:courseId/:classId/:capacity", async (req, res) => {
 
     groups.push(group);
   }
-
+  IOconn.emit("NEW_GROUP_CREATED", "OK");
   res.json({ groups });
 });
 
@@ -96,8 +97,9 @@ router.get(
         group.students.some((s) => s._id.toString() === studentId)
       );
       if (!studentGroup) {
-        return res
-          .json({ message: "Student not found in any group for this course" });
+        return res.json({
+          message: "Student not found in any group for this course",
+        });
       }
       res.status(200).json(studentGroup);
     } catch (err) {

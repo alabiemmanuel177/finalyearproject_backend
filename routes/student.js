@@ -6,7 +6,8 @@ const AssignmentAnswer = require("../models/AssignmentAnswer");
 const Class = require("../models/Class");
 
 //UPDATE STUDENT
-router.put("/:id", async (req, res) => {
+router.patch("/:id", async (req, res) => {
+  const { IOconn } = req;
   if (req.body.studentId === req.params.id) {
     if (req.body.password) {
       const salt = await bcrypt.genSalt(10);
@@ -20,6 +21,7 @@ router.put("/:id", async (req, res) => {
         },
         { new: true }
       );
+      IOconn.emit("STUDENT_UPDATED", "OK");
       return res.status(200).json(updatedStudent);
     } catch (err) {
       return res.status(500).json(err);
@@ -31,11 +33,14 @@ router.put("/:id", async (req, res) => {
 
 //DELETE STUDENT
 router.delete("/:id", async (req, res) => {
+  const { IOconn } = req;
+
   if (req.body.studentId === req.params.id) {
     try {
       const student = await Student.findById(req.params.id);
       try {
         await Lecturer.findByIdAndDelete(req.params.id);
+        IOconn.emit("STUDENT_DELETED", "OK");
         return res.status(200).json("Student has been deleted");
       } catch (err) {
         return res.status(500).json(err);
@@ -152,42 +157,6 @@ const getCourseIds = async (studentId) => {
   return courseIds;
 };
 
-// // Get all assignments not submitted by a student for courses in their class but can still be submitted
-// router.get("/assignments/missing/:studentId", async (req, res) => {
-//   const studentId = req.params.studentId;
-//   const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-
-//   try {
-//     // Get course IDs for the student
-//     const courseIds = await getCourseIds(studentId);
-
-//     // Get assignments due that the student has not answered
-//     const assignments = await Assignment.find({
-//       courseId: { $in: courseIds },
-//       dueDate: { $lt: new Date() },
-//     })
-//       .populate({ path: "creatorId", select: "firstname lastname" })
-//       .lean();
-
-//     const answeredAssignmentIds = await AssignmentAnswer.distinct(
-//       "assignmentId",
-//       { studentId }
-//     );
-
-//     const filteredAssignments = assignments.filter(
-//       (assignment) =>
-//         !answeredAssignmentIds.includes(assignment._id) &&
-//         assignment.dueDate > fifteenMinutesAgo
-//     );
-
-//     res.status(200).json(filteredAssignments);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Server error" });
-//   }
-// });
-
-// Get all assignments students can no longer submit
 // Route to get all assignments that a student hasn't submitted for the courses he is offering which are in the class schema and can no longer submit
 router.get("/assignments/missed/:studentId", async (req, res) => {
   try {

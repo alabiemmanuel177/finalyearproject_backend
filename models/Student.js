@@ -24,9 +24,6 @@ const StudentSchema = new mongoose.Schema(
     level: {
       type: Number,
     },
-    otp: {
-      type: String,
-    },
     email: {
       type: String,
       required: true,
@@ -45,7 +42,7 @@ const StudentSchema = new mongoose.Schema(
       ref: "Class",
     },
   },
-  { timestamps: true }
+  { timestamps: true, collection: "students" }
 );
 
 module.exports = mongoose.model("Student", StudentSchema);

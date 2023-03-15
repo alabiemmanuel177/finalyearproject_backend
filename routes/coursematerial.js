@@ -92,7 +92,7 @@ router.post("/", upload.array("files"), async (req, res) => {
     });
     const savedCourseMaterial = await newCourseMaterial.save();
 
-    IOconn.emit("LECTURER_UPLOADED_NEW_COURSES", "OK");
+    IOconn.emit("NEW_COURSEMATERIAL_POSTED", "OK");
     res.status(201).json(savedCourseMaterial);
   } catch (error) {
     console.error(error);
@@ -125,6 +125,7 @@ router.get("/:id", async (req, res) => {
 
 // Route to update a course material
 router.put("/:id", (req, res) => {
+  const { IOconn } = req;
   const { id } = req.params;
   const updatedMaterial = req.body;
 
@@ -134,8 +135,8 @@ router.put("/:id", (req, res) => {
     { new: true },
     (err, material) => {
       if (err) return res.status(500).send(err);
-      if (!material)
-        return res.status(404).send({ message: "Course Material not found" });
+      if (!material) IOconn.emit("COURSEMATERIALS_UPDATED", "OK");
+      return res.status(404).send({ message: "Course Material not found" });
 
       return res.send(material);
     }
@@ -145,6 +146,7 @@ router.put("/:id", (req, res) => {
 // Route to delete a course material
 router.delete("/course/:id", async (req, res) => {
   try {
+    const { IOconn } = req;
     const coursematerialId = req.params.id;
     const coursematerial = await CourseMaterial.findOne({ coursematerialId });
 
@@ -159,6 +161,7 @@ router.delete("/course/:id", async (req, res) => {
 
     // Delete course from database
     await coursematerial.remove();
+    IOconn.emit("COURSEMATERIAL_DELETED", "OK");
     res.status(200).json({ message: "Course Material deleted successfully" });
   } catch (error) {
     console.error(error);

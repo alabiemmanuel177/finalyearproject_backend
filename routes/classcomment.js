@@ -16,6 +16,7 @@ router.post("/", async (req, res) => {
 
 //UPDATE CLASSCOMMENT
 router.put("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
     const updatedClassComment = await ClassComment.findByIdAndUpdate(
       req.params.id,
@@ -24,6 +25,7 @@ router.put("/:id", async (req, res) => {
       },
       { new: true }
     );
+    IOconn.emit("COMMENT_UPDATED", "OK");
     return res.status(200).json(updatedClassComment);
   } catch (err) {
     return res.status(500).json(err);
@@ -32,9 +34,11 @@ router.put("/:id", async (req, res) => {
 
 //DELETE CLASSCOMMENT
 router.delete("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
     const classComment = await ClassComment.findById(req.params.id);
     await classComment.delete();
+    IOconn.emit("COMMENT_DELETED", "OK");
     return res.status(200).json("Class Comment has been deleted...");
   } catch (err) {
     return res.status(500).json(err);
@@ -64,6 +68,7 @@ router.get("/", async (req, res) => {
 
 //PATCH CLASSCOMMENT
 router.patch("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
     const updatedClassComment = await ClassComment.findByIdAndUpdate(
       req.params.id,
@@ -71,6 +76,7 @@ router.patch("/:id", async (req, res) => {
         $push: req.body,
       }
     );
+    IOconn.emit("COMMENT_EDITED", "OK");
     return res.status(200).json(updatedClassComment);
   } catch (err) {
     return res.status(500).json(err);

@@ -1,7 +1,6 @@
 const router = require("express").Router();
 const Assignment = require("../models/Assignment");
 const AssignmentAnswer = require("../models/AssignmentAnswer");
-const Student = require("../models/Student");
 
 // Route to post assignment
 router.post("/", async (req, res) => {
@@ -22,7 +21,7 @@ router.post("/", async (req, res) => {
     await assignment.save();
 
     res.status(201).json({ message: "Assignment created successfully" });
-    IOconn.emit("LECTURER_UPLOADED_NEW_ASSIGNMENT", "OK");
+    IOconn.emit("NEW_ASSIGNMENT_UPLOADED", "OK");
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -31,6 +30,8 @@ router.post("/", async (req, res) => {
 
 //update assignment answer
 router.put("/assignment-answers/:id", function (req, res) {
+  const { IOconn } = req;
+
   AssignmentAnswer.findByIdAndUpdate(
     req.params.id,
     req.body,
@@ -39,6 +40,8 @@ router.put("/assignment-answers/:id", function (req, res) {
       if (err) {
         res.send(err);
       }
+      IOconn.emit("ASSIGNMENT_UPDATED", "OK");
+
       res.json(updatedAssignmentAnswer);
     }
   );
@@ -46,10 +49,14 @@ router.put("/assignment-answers/:id", function (req, res) {
 
 //DELETE ASSIGNMENT
 router.delete("/assignments/:id", function (req, res) {
+  const { IOconn } = req;
+
   Assignment.findByIdAndRemove(req.params.id, function (err) {
     if (err) {
       res.send(err);
     }
+    IOconn.emit("ASSIGNMENT_DELETED", "OK");
+
     res.json({ message: "Assignment successfully deleted" });
   });
 });

@@ -19,6 +19,7 @@ router.post("/", async (req, res) => {
 
 //UPDATE CLASS
 router.put("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
     const updatedClass = await Class.findByIdAndUpdate(
       req.params.id,
@@ -27,6 +28,7 @@ router.put("/:id", async (req, res) => {
       },
       { new: true }
     );
+    IOconn.emit("CLASS_UPDATED", "OK");
     return res.status(200).json(updatedClass);
   } catch (err) {
     return res.status(500).json(err);
@@ -35,8 +37,8 @@ router.put("/:id", async (req, res) => {
 
 //DELETE CLASS
 router.delete("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
-    const { IOconn } = req;
     const Cclass = await Class.findById(req.params.id);
     await Cclass.delete();
     IOconn.emit("CLASS_DELETED", "OK");
@@ -69,10 +71,13 @@ router.get("/", async (req, res) => {
 
 //PATCH CLASS
 router.patch("/:id", async (req, res) => {
+  const { IOconn } = req;
+
   try {
     const updatedClass = await Class.findByIdAndUpdate(req.params.id, {
       $push: req.body,
     });
+    IOconn.emit("CLASS_UPDATED", "OK");
     return res.status(200).json(updatedClass);
   } catch (err) {
     return res.status(500).json(err);
@@ -109,7 +114,9 @@ router.get("/classes/:classId/resources", async (req, res) => {
     const courses = await Course.find({
       course: { $in: classObject.courses },
     });
-    const resources = await CourseMaterial.find({ course: { $in: courses } }).populate("course");
+    const resources = await CourseMaterial.find({
+      course: { $in: courses },
+    }).populate("course");
     res.json(resources);
   } catch (error) {
     console.error(error);

@@ -1,11 +1,13 @@
 const router = require("express").Router();
 const Admin = require("../models/Admin");
+const Student = require("../models/Student");
+const Lecturer = require("../models/Lecturer");
+const Course = require("../models/Course");
 const bcrypt = require("bcryptjs");
-const nodemailer = require("nodemailer");
-// const  generateOTP = require("../generateOTP")
 
 //UPDATE ADMIN
 router.put("/:id", async (req, res) => {
+  const { IOconn } = req;
   if (req.body.adminId === req.params.id) {
     if (req.body.password) {
       const salt = await bcrypt.genSalt(10);
@@ -19,6 +21,7 @@ router.put("/:id", async (req, res) => {
         },
         { new: true }
       );
+      IOconn.emit("ADMIN_UPDATED", "OK");
       return res.status(200).json(updatedAdmin);
     } catch (err) {
       return res.status(500).json(err);
@@ -30,6 +33,7 @@ router.put("/:id", async (req, res) => {
 
 //DELETE ADMIN
 router.delete("/:id", async (req, res) => {
+  const { IOconn } = req;
   if (req.body.adminId === req.params.id) {
     try {
       const admin = await Admin.findById(req.params.id);
@@ -37,6 +41,7 @@ router.delete("/:id", async (req, res) => {
         await admin.findByIdAndDelete(req.params.id);
         return res.status(200).json("Admin has been deleted");
       } catch (err) {
+        IOconn.emit("ADMIN_DELETED", "OK");
         return res.status(500).json(err);
       }
     } catch {
@@ -59,40 +64,91 @@ router.get("/:id", async (req, res) => {
 });
 
 //CHANGE PASSWORD ADMIN
+router.post("/change-password", async (req, res) => {
+  const { id, oldPassword, newPassword } = req.body;
 
-router.post("/reset", async (req, res) => {
-  const { email } = req.body;
+  try {
+    const admin = await Admin.findOne({ _id: id });
 
-  // Find the user with the given email
-  const admin = await Admin.findOne({ email });
-  if (!admin) return res.status(400).send({ error: "Invalid email" });
+    const isMatch = await bcrypt.compare(oldPassword, admin.password);
+    if (!isMatch)
+      return res.status(400).json({ msg: "Incorrect old password" });
 
-  // Generate and send an OTP
-  const otp = generateOTP();
-  sendOTP(admin.email, otp);
+    const salt = await bcrypt.genSalt(10);
+    admin.password = await bcrypt.hash(newPassword, salt);
 
-  // Save the OTP in the user's database record
-  admin.otp = otp;
-  await admin.save();
-
-  res.send({ message: "OTP sent" });
+    await admin.save();
+    res.json({ msg: "Password changed successfully" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
 });
 
-router.post("/reset/verify", async (req, res) => {
-  const { email, otp, password } = req.body;
-
-  // Find the user with the given email
-  const admin = await Admin.findOne({ email });
-  if (!admin) return res.status(400).send({ error: "Invalid email" });
-
-  // Check if the OTP is correct
-  if (admin.otp !== otp) return res.status(400).send({ error: "Invalid OTP" });
-
-  // Update the user's password
-  admin.password = password;
-  await admin.save();
-
-  res.send({ message: "Password updated" });
+//GET ALL STUDENT
+router.get("/all/students", async (req, res) => {
+  try {
+    const students = await Student.find();
+    res.status(200).json(students);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
 });
+
+//GET ALL LECTURERS
+router.get("/all/lecturers", async (req, res) => {
+  try {
+    const lecturers = await Lecturer.find();
+    res.status(200).json(lecturers);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+//GET ALL COURSES
+router.get("/all/courses", async (req, res) => {
+  try {
+    const courses = await Course.find();
+    res.status(200).json(courses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+//Students Count
+router.get("/students/count", async (req, res) => {
+  try {
+    const count = await Student.countDocuments();
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+router.get("/lecturers/count", async (req, res) => {
+  try {
+    const count = await Lecturer.countDocuments();
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+router.get("/courses/count", async (req, res) => {
+  try {
+    const count = await Course.countDocuments();
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 
 module.exports = router;

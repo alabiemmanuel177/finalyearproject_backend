@@ -9,7 +9,7 @@ router.post("/", async (req, res) => {
   const newClassPost = new ClassPost(req.body);
   try {
     const savedClassPost = await newClassPost.save();
-    IOconn.emit("NEW_CLASSPOST", "OK");
+    IOconn.emit("NEW_CLASSPOST_POSTED", "OK");
     return res.status(200).json(savedClassPost);
   } catch (err) {
     return res.status(500).json(err);
@@ -18,6 +18,7 @@ router.post("/", async (req, res) => {
 
 //UPDATE CLASSPOST
 router.put("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
     const updatedClassPost = await ClassPost.findByIdAndUpdate(
       req.params.id,
@@ -26,6 +27,7 @@ router.put("/:id", async (req, res) => {
       },
       { new: true }
     );
+    IOconn.emit("CLASSPOST_UPDATED", "OK");
     return res.status(200).json(updatedClassPost);
   } catch (err) {
     return res.status(500).json(err);
@@ -34,9 +36,11 @@ router.put("/:id", async (req, res) => {
 
 //DELETE CLASSPOST
 router.delete("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
     const classPost = await ClassPost.findById(req.params.id);
     await classPost.delete();
+    IOconn.emit("CLASSPOST_DELETED", "OK");
     return res.status(200).json("Class Post has been deleted...");
   } catch (err) {
     return res.status(500).json(err);
@@ -66,10 +70,12 @@ router.get("/", async (req, res) => {
 
 //PATCH CLASSPOST
 router.patch("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
     const updatedClassPost = await ClassPost.findByIdAndUpdate(req.params.id, {
       $push: req.body,
     });
+    IOconn.emit("CLASSPOST_UPDATED", "OK");
     return res.status(200).json(updatedClassPost);
   } catch (err) {
     return res.status(500).json(err);

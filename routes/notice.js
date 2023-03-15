@@ -1,13 +1,13 @@
 const router = require("express").Router();
-const Admin = require("../models/Admin");
-const Lecturer = require("../models/Lecturer");
 const Notice = require("../models/Notice");
 
 //CREATE NOTICE
 router.post("/", async (req, res) => {
+  const { IOconn } = req;
   const newNotice = new Notice(req.body);
   try {
     const savedNotice = await newNotice.save();
+    IOconn.emit("NEW_NOTICE_POSTED", "OK");
     return res.status(200).json(savedNotice);
   } catch (err) {
     console.log(err);
@@ -17,6 +17,7 @@ router.post("/", async (req, res) => {
 
 //UPDATE NOTICE
 router.put("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
     const updatedNotice = await Notice.findByIdAndUpdate(
       req.params.id,
@@ -25,6 +26,8 @@ router.put("/:id", async (req, res) => {
       },
       { new: true }
     );
+    IOconn.emit("NOTICE_UPDATED", "OK");
+
     return res.status(200).json(updatedNotice);
   } catch (err) {
     return res.status(500).json(err);
@@ -33,9 +36,11 @@ router.put("/:id", async (req, res) => {
 
 //DELETE NOTICE
 router.delete("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
     const notice = await Notice.findById(req.params.id);
     await notice.delete();
+    IOconn.emit("NOTICE_DELETED", "OK");
     return res.status(200).json("Notice has been deleted...");
   } catch (err) {
     return res.status(500).json(err);
@@ -65,10 +70,12 @@ router.get("/", async (req, res) => {
 
 //PATCH NOTICE
 router.patch("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
     const updatedNotice = await Notice.findByIdAndUpdate(req.params.id, {
       $push: req.body,
     });
+    IOconn.emit("NOTICE_UPDATED", "OK");
     return res.status(200).json(updatedNotice);
   } catch (err) {
     return res.status(500).json(err);

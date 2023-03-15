@@ -113,7 +113,7 @@ router.post("/student/login", async (req, res) => {
 });
 
 //ADMIN LOGIN
-router.post("/adminLogin", async (req, res) => {
+router.post("/admin/login", async (req, res) => {
   try {
     const admin = await Admin.findOne({ email: req.body.email });
     if (!admin) {

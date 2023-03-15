@@ -3,9 +3,11 @@ const Department = require("../models/Department");
 
 //CREATE DEPARTMENT
 router.post("/", async (req, res) => {
+  const { IOconn } = req;
   const newDepartment = new Department(req.body);
   try {
     const savedDepartment = await newDepartment.save();
+    IOconn.emit("NEW_DEPARTMENT_POSTED", "OK");
     return res.status(200).json(savedDepartment);
   } catch (err) {
     return res.status(500).json(err);
@@ -14,6 +16,7 @@ router.post("/", async (req, res) => {
 
 //UPDATE DEPARTMENT
 router.put("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
     const updatedDepartment = await Department.findByIdAndUpdate(
       req.params.id,
@@ -22,6 +25,7 @@ router.put("/:id", async (req, res) => {
       },
       { new: true }
     );
+    IOconn.emit("DEPARTMENT_UPDATED", "OK");
     return res.status(200).json(updatedDepartment);
   } catch (err) {
     return res.status(500).json(err);
@@ -30,9 +34,11 @@ router.put("/:id", async (req, res) => {
 
 //DELETE DEPARTMENT
 router.delete("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
     const department = await Department.findById(req.params.id);
     await department.delete();
+    IOconn.emit("DEPARTMENT_DELETED", "OK");
     return res.status(200).json("Department has been deleted...");
   } catch (err) {
     return res.status(500).json(err);
@@ -62,6 +68,7 @@ router.get("/", async (req, res) => {
 
 //PATCH DEPARTMENT
 router.patch("/:id", async (req, res) => {
+  const { IOconn } = req;
   try {
     const updatedDepartment = await Department.findByIdAndUpdate(
       req.params.id,
@@ -69,6 +76,7 @@ router.patch("/:id", async (req, res) => {
         $push: req.body,
       }
     );
+    IOconn.emit("DEPARTMENT_UPDATED", "OK");
     return res.status(200).json(updatedDepartment);
   } catch (err) {
     return res.status(500).json(err);

@@ -14,9 +14,6 @@ const LecturerSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    otp: {
-      type: String,
-    },
     department: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",
@@ -27,7 +24,7 @@ const LecturerSchema = new mongoose.Schema(
       unique: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true, collection: "lecturers" }
 );
 
 module.exports = mongoose.model("Lecturer", LecturerSchema);

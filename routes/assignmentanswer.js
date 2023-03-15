@@ -58,6 +58,8 @@ router.post(
   "/:assignmentId/:studentId",
   upload.array("file"),
   async (req, res) => {
+    const { IOconn } = req;
+
     try {
       // get the assignment ID from the request params
       const { assignmentId, studentId } = req.params;
@@ -97,6 +99,7 @@ router.post(
         file: assignmentAnswerFile._id,
       });
       await assignmentAnswer.save();
+      IOconn.emit("NEW_ASSIGNMENT_ANSWER_POSTED", "OK");
 
       // send success response
       return res
@@ -110,6 +113,8 @@ router.post(
 );
 
 router.delete("/unsubmit/:answerId", async (req, res) => {
+  const { IOconn } = req;
+
   try {
     // get the answer ID from the request params
     const { answerId } = req.params;
@@ -136,6 +141,7 @@ router.delete("/unsubmit/:answerId", async (req, res) => {
     // delete the AssignmentAnswer and AssignmentAnswerFile documents from the database
     await assignmentAnswerFile.delete();
     await assignmentAnswer.delete();
+    IOconn.emit("ASSIGNMENT_ANSWER_DELETED", "OK");
 
     return res.send({ message: "Assignment answer deleted successfully" });
   } catch (error) {
