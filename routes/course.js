@@ -3,7 +3,7 @@ const Course = require("../models/Course");
 const Lecturer = require("../models/Lecturer");
 const Student = require("../models/Student");
 const Class = require("../models/Class");
-const CourseMaterial = require('../models/CourseMaterial');
+const CourseMaterial = require("../models/CourseMaterial");
 const Group = require("../models/Group");
 
 //CREATE COURSE
@@ -77,38 +77,47 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-// Get the lecturers and students for a particular course
-router.get("/:id/members", async (req, res) => {
+// Route to get the lecturers and students offering a particular course
+router.get("/:courseId/members", async (req, res) => {
   try {
-    const courseId = req.params.id;
+    const courseId = req.params.courseId;
 
-    // Find the course
-    const course = await Course.findById(courseId).populate('lecturer');
+    // Find the course with the given ID
+    const course = await Course.findById(courseId).populate("lecturer");
 
-    // If the course is not found, return an error
+    // If the course is not found, return an error message
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ error: "Course not found" });
     }
 
-    // Find all the classes for the course
-    const classes = await Class.find({ course: courseId });
+    // Find the class that the course belongs to
+    const classObj = await Class.findOne({ courses: courseId }).populate(
+      "department",
+      "name"
+    );
 
-    // Find all the students for the classes
-    const students = await Student.find({ class: { $in: classes.map(c => c._id) } });
+    // If the course is not added to any class, return a message saying that students haven't been enrolled for the course
+    if (!classObj) {
+      return res.json({
+        message:
+          "No class found for the course. Students haven't been enrolled for the course yet.",
+      });
+    }
 
-    // Return the lecturer and students
-    return res.json({
-      lecturer: course.lecturer,
-      students: students,
-    });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    // Find the students in the class that are assigned to the course
+    const students = await Student.find({ class: classObj._id })
+      .populate("department", "name")
+      .find({ courses: courseId });
+
+    res.json({ course, classObj, students });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
 // Get CourseMaterial for a particular course
-router.get('/:id/materials', async (req, res) => {
+router.get("/:id/materials", async (req, res) => {
   try {
     const courseId = req.params.id;
 
@@ -117,7 +126,7 @@ router.get('/:id/materials', async (req, res) => {
 
     // If the course is not found, return an error
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ message: "Course not found" });
     }
 
     // Find the course materials for the course
@@ -130,7 +139,7 @@ router.get('/:id/materials', async (req, res) => {
     });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 });
 
@@ -145,7 +154,6 @@ router.get("/:courseId/groups", async (req, res) => {
   }
 });
 
-
 // Route to get the class ID from a course ID
 router.get("/:courseId/class", async (req, res) => {
   try {
@@ -155,7 +163,10 @@ router.get("/:courseId/class", async (req, res) => {
     }
     const classId = await Class.findOne({ courses: course._id });
     if (!classId) {
-      return res.status(404).json({ message: "Class not found" });
+      return res.json({
+        message:
+          "No class found for the course. Students haven't been enrolled for the course yet.",
+      });
     }
     return res.status(200).json({ classId: classId._id });
   } catch (err) {

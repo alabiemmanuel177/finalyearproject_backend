@@ -63,6 +63,11 @@ router.get("/courses/:courseId/groups", async (req, res) => {
   try {
     const courseId = req.params.courseId;
     const groups = await Group.find({ course: courseId }).populate("students");
+    if (!groups) {
+      return res.json({
+        message: "No group has been created by your lecturer.",
+      });
+    }
     res.status(200).json(groups);
   } catch (err) {
     console.error(err);
@@ -82,13 +87,17 @@ router.get(
         course: courseId,
         class: student.class._id,
       }).populate("students");
+      if (!groups) {
+        return res.json({
+          message: "No group has been created by your lecturer.",
+        });
+      }
       const studentGroup = groups.find((group) =>
         group.students.some((s) => s._id.toString() === studentId)
       );
       if (!studentGroup) {
         return res
-          .status(404)
-          .json({ msg: "Student not found in any group for this course" });
+          .json({ message: "Student not found in any group for this course" });
       }
       res.status(200).json(studentGroup);
     } catch (err) {

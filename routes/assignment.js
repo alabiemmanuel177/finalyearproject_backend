@@ -86,6 +86,18 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+//GET ASSIGNMENT ALONE
+router.get("/:id/alone", async (req, res) => {
+  try {
+    const assignment = await Assignment.findById(req.params.id);
+    res.send({
+      assignment,
+    });
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
 // Route to get assignment using assignment id and student's answer
 router.get("/:assignmentId/:studentId", async (req, res) => {
   const { assignmentId, studentId } = req.params;

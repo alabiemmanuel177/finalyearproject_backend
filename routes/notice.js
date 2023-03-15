@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const Admin = require("../models/Admin");
+const Lecturer = require("../models/Lecturer");
 const Notice = require("../models/Notice");
 
 //CREATE NOTICE

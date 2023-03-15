@@ -60,43 +60,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-//CHANGE PASSWORD LECTURER
-router.post("/reset", async (req, res) => {
-  const { email } = req.body;
-
-  // Find the lecturer with the given email
-  const lecturer = await Lecturer.findOne({ email });
-  if (!lecturer) return res.status(400).send({ error: "Invalid email" });
-
-  // Generate and send an OTP
-  const otp = generateOTP();
-  sendOTP(lecturer.email, otp);
-
-  // Save the OTP in the lecturer's database record
-  lecturer.otp = otp;
-  await lecturer.save();
-
-  res.send({ message: "OTP sent" });
-});
-
-router.post("/reset/verify", async (req, res) => {
-  const { email, otp, password } = req.body;
-
-  // Find the lecturer with the given email
-  const lecturer = await Lecturer.findOne({ email });
-  if (!lecturer) return res.status(400).send({ error: "Invalid email" });
-
-  // Check if the OTP is correct
-  if (lecturer.otp !== otp)
-    return res.status(400).send({ error: "Invalid OTP" });
-
-  // Update the lecturer's password
-  lecturer.password = password;
-  await lecturer.save();
-
-  res.send({ message: "Password updated" });
-});
-
 //route to get course count
 router.get("/:id/count-courses", async (req, res) => {
   try {

@@ -29,7 +29,21 @@ const uploads = (file, folder) => {
     );
   });
 };
+
+const destroy = (public_id) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.destroy(public_id, (error, result) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+};
+
 const uploader = async (path, folderName) => await uploads(path, folderName);
 module.exports = {
   uploader,
+  destroy,
 };

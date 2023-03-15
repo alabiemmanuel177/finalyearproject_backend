@@ -6,9 +6,11 @@ const CourseRouter = require("./course");
 const DepartmentRouter = require("./department");
 const ClassPostRouter = require("./classpost");
 const CourseMaterialRouter = require("./coursematerial");
+const CourseMaterialFileRouter = require("./coursematerialfile");
 const ClassComment = require("./classcomment");
 const AssignmentRouter = require("./assignment");
 const AssignmentAnswerRouter = require("./assignmentanswer");
+const AssignmentAnswerFileRouter = require("./assignmentanswerfile");
 const ClassRouter = require("./class");
 const NoticeRouter = require("./notice");
 const GroupRouter = require("./group");
@@ -33,9 +35,23 @@ const routes = ({ app, io }) => {
     addSocketConnectionToReq(io),
     CourseMaterialRouter
   );
+  app.use(
+    "/coursematerialfile",
+    addSocketConnectionToReq(io),
+    CourseMaterialFileRouter
+  );
   app.use("/classcomment", addSocketConnectionToReq(io), ClassComment);
   app.use("/assignment", addSocketConnectionToReq(io), AssignmentRouter);
-  app.use("/assignment-answer", addSocketConnectionToReq(io), AssignmentAnswerRouter);
+  app.use(
+    "/assignment-answer",
+    addSocketConnectionToReq(io),
+    AssignmentAnswerRouter
+  );
+  app.use(
+    "/assignment-answerfile",
+    addSocketConnectionToReq(io),
+    AssignmentAnswerFileRouter
+  );
   app.use("/class", addSocketConnectionToReq(io), ClassRouter);
   app.use("/notice", addSocketConnectionToReq(io), NoticeRouter);
   app.use("/group", addSocketConnectionToReq(io), GroupRouter);
