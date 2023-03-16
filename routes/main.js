@@ -4,6 +4,7 @@ const StudentRouter = require("./student");
 const AuthRouter = require("./auth");
 const CourseRouter = require("./course");
 const DepartmentRouter = require("./department");
+const SchoolRouter = require("./school");
 const ClassPostRouter = require("./classpost");
 const CourseMaterialRouter = require("./coursematerial");
 const CourseMaterialFileRouter = require("./coursematerialfile");
@@ -29,6 +30,7 @@ const routes = ({ app, io }) => {
   app.use("/lecturer", addSocketConnectionToReq(io), LecturerRouter);
   app.use("/course", addSocketConnectionToReq(io), CourseRouter);
   app.use("/department", addSocketConnectionToReq(io), DepartmentRouter);
+  app.use("/school", addSocketConnectionToReq(io), SchoolRouter);
   app.use("/classpost", addSocketConnectionToReq(io), ClassPostRouter);
   app.use(
     "/coursematerial",

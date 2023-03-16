@@ -7,6 +7,10 @@ const DepartmentSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    school: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "School",
+    },
   },
   { timestamps: true }
 );

@@ -88,7 +88,12 @@ router.post("/change-password", async (req, res) => {
 //GET ALL STUDENT
 router.get("/all/students", async (req, res) => {
   try {
-    const students = await Student.find();
+    const students = await Student.find({})
+      .populate({
+        path: "department",
+        populate: { path: "school", model: "School" },
+      })
+      .exec();
     res.status(200).json(students);
   } catch (error) {
     console.error(error);
@@ -99,7 +104,12 @@ router.get("/all/students", async (req, res) => {
 //GET ALL LECTURERS
 router.get("/all/lecturers", async (req, res) => {
   try {
-    const lecturers = await Lecturer.find();
+    const lecturers = await Lecturer.find({})
+      .populate({
+        path: "department",
+        populate: { path: "school", model: "School" },
+      })
+      .exec();
     res.status(200).json(lecturers);
   } catch (error) {
     console.error(error);
@@ -148,7 +158,5 @@ router.get("/courses/count", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
-
 
 module.exports = router;
