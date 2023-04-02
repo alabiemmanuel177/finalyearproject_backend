@@ -13,6 +13,7 @@ router.post("/", async (req, res) => {
     const savedCourse = await newCourse.save();
     return res.status(200).json(savedCourse);
   } catch (err) {
+    console.log(err);
     return res.status(500).json(err);
   }
 });
@@ -29,6 +30,7 @@ router.put("/:id", async (req, res) => {
     );
     return res.status(200).json(updatedCourse);
   } catch (err) {
+    console.log(err);
     return res.status(500).json(err);
   }
 });
@@ -83,7 +85,16 @@ router.get("/:courseId/members", async (req, res) => {
     const courseId = req.params.courseId;
 
     // Find the course with the given ID
-    const course = await Course.findById(courseId).populate("lecturer");
+    const course = await Course.findById(courseId)
+      .populate({
+        path: "lecturer",
+        populate: {
+          path: "department",
+          model: "Department",
+          populate: { path: "school", model: "School" },
+        },
+      })
+      .exec();
 
     // If the course is not found, return an error message
     if (!course) {
@@ -106,7 +117,10 @@ router.get("/:courseId/members", async (req, res) => {
 
     // Find the students in the class that are assigned to the course
     const students = await Student.find({ class: classObj._id })
-      .populate("department", "name")
+      .populate({
+        path: "department",
+        populate: { path: "school", model: "School" },
+      })
       .find({ courses: courseId });
 
     res.json({ course, classObj, students });

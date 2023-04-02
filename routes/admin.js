@@ -120,7 +120,7 @@ router.get("/all/lecturers", async (req, res) => {
 //GET ALL COURSES
 router.get("/all/courses", async (req, res) => {
   try {
-    const courses = await Course.find();
+    const courses = await Course.find().populate("lecturer");
     res.status(200).json(courses);
   } catch (error) {
     console.error(error);

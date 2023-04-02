@@ -1,3 +1,4 @@
+// Adds Admin schema to Ember. js. This is used to ensure that we don't accidentally have a model that's in an unresolvable state
 const mongoose = require("mongoose");
 
 const AdminSchema = new mongoose.Schema(

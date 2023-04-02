@@ -16,6 +16,11 @@ const ClassRouter = require("./class");
 const NoticeRouter = require("./notice");
 const GroupRouter = require("./group");
 
+/**
+* @brief Adds a socket connection to req. IOconn. This is a middleware function to allow us to add an I / O connection to req
+* @param io The I / O connection to add
+* @return { Function } The middleware function that when called will add the I / O connection to req. IO
+*/
 function addSocketConnectionToReq(io) {
   return async (req, res, next) => {
     req.IOconn = io;

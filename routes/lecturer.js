@@ -64,6 +64,17 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+//GET ALL NOTICE
+router.get("/", async (req, res) => {
+  try {
+    let lecturers;
+    lecturers = await Lecturer.find();
+    return res.status(200).json(lecturers);
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
+
 //route to get course count
 router.get("/:id/count-courses", async (req, res) => {
   try {

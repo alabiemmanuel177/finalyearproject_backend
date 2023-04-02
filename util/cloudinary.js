@@ -1,3 +1,4 @@
+// Adds the middleware for cloudinary. v2 to Ember's middleware chain. This is necessary because Ember doesn't have googletask
 const cloudinary = require("cloudinary").v2;
 
 // configure cloudinary

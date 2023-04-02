@@ -29,7 +29,12 @@ const whitelist = [
   "https://bucodel.vercel.app/",
 ];
 const corsOptions = {
+  /**
+  * @param origin
+  * @param callback
+  */
   origin: function (origin, callback) {
+    // Check if the origin is allowed by CORS
     if (whitelist.indexOf(origin) !== -1) {
       callback(null, true);
     } else {

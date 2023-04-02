@@ -1,4 +1,7 @@
 {
-    "docify.commentService.sidePanelReviewMode": false,
-    "docify.translateService.programmingLanguage": "auto-detect"
+    "docify.commentService.sidePanelReviewMode": true,
+    "docify.translateService.programmingLanguage": "auto-detect",
+    "docify.commentService.programmingLanguage": "javascript",
+    "docify.commentService.docstringFormat": "JavaDoc",
+    "docify.commentService.inlineComments": true
 }
