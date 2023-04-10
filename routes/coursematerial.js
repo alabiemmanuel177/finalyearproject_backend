@@ -108,7 +108,9 @@ router.get("/course/:id/materials", (req, res) => {
     } else {
       res.status(200).json(materials);
     }
-  }).populate("course");
+  })
+    .populate("course")
+    .sort({ createdAt: -1 });
 });
 
 //Route to get a particular course material

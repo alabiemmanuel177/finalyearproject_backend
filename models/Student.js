@@ -41,6 +41,10 @@ const StudentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Class",
     },
+    profilePic: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ProfilePic",
+    },
   },
   { timestamps: true, collection: "students" }
 );

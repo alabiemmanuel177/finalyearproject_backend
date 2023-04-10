@@ -5,6 +5,10 @@ const Course = require("../models/Course");
 const Class = require("../models/Class");
 const Student = require("../models/Student");
 const Assignment = require("../models/Assignment");
+const { uploader, deleteFile } = require("../util/cloudinary");
+const multer = require("multer");
+const fs = require("fs");
+const ProfilePic = require("../models/ProfilePic");
 
 //UPDATE LECTURER
 router.put("/:id", async (req, res) => {
@@ -188,4 +192,114 @@ router.get("/assignments/:lecturerId", async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
+
+/**
+ * This should be properly extracted into a utility function
+ */
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === "image/jpeg" ||
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/webp" ||
+    file.mimetype === "image/jpg"
+  ) {
+    cb(null, true);
+  } else {
+    //reject file
+    cb({ message: "Unsupported file format" }, false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 1024 * 1024 * 10 },
+  fileFilter: fileFilter,
+});
+
+// Upload a new profile picture for a user
+router.post(
+  "/:userId/profilepic",
+  upload.single("profilePic"),
+  async (req, res) => {
+    try {
+      const user = await Lecturer.findById(req.params.userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "Lecturer not found" });
+      }
+
+      const result = await uploader(req, "BUCODEL/profile_pictures");
+
+      // Create a new profile picture document in the database
+      const newProfilePic = new ProfilePic({
+        fileUrl: result.secure_url,
+        fileType: req.file.mimetype,
+        fileName: req.file.originalname,
+        public_id: result.id,
+      });
+      await newProfilePic.save();
+
+      // Update the reference to the new profile picture in the user's document
+      user.profilePic = newProfilePic._id;
+      await user.save();
+
+      res
+        .status(200)
+        .json({ message: "Profile picture uploaded successfully" });
+      fs.unlinkSync(req.file.path);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
+
+// Delete the profile picture for a user
+router.delete("/:userId/profilepic", async (req, res) => {
+  try {
+    const user = await Lecturer.findById(req.params.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "Lecturer not found" });
+    }
+
+    // Check if the user has a profile picture
+    if (!user.profilePic) {
+      return res
+        .status(400)
+        .json({ message: "User does not have a profile picture" });
+    }
+
+    const profilePic = await ProfilePic.findById(user.profilePic);
+
+    if (!profilePic) {
+      return res.status(404).json({ message: "Profile picture not found" });
+    }
+
+    // Delete the profile picture from Cloudinary
+    await deleteFile(profilePic.public_id);
+
+    // Delete the profile picture document from the database
+    await ProfilePic.findByIdAndDelete(profilePic._id);
+
+    // Remove the reference to the profile picture from the user's document
+    user.profilePic = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Profile picture deleted successfully" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;

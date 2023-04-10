@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const ClassComment = require("../models/ClassComment");
 const ClassPost = require("../models/ClassPost");
 const Lecturer = require("../models/Lecturer");
 const Student = require("../models/Student");
@@ -61,7 +62,7 @@ router.get("/:id", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     let classPosts;
-    classPosts = await ClassPost.find();
+    classPosts = await ClassPost.find().sort({ createdAt: -1 });
     return res.status(200).json(classPosts);
   } catch (err) {
     return res.status(500).json(err);
@@ -86,7 +87,9 @@ router.patch("/:id", async (req, res) => {
 router.get("/posts/:courseId", async (req, res) => {
   try {
     // Find all posts for the specific course
-    const posts = await ClassPost.find({ course: req.params.courseId });
+    const posts = await ClassPost.find({ course: req.params.courseId }).sort({
+      createdAt: -1,
+    });
     if (!posts) return res.status(404).send("No posts found for this course");
 
     // Create an array to store the post content and author information
@@ -97,20 +100,26 @@ router.get("/posts/:courseId", async (req, res) => {
       let author = {};
       if (post.student_id) {
         // If the post was created by a student, find the student and return their information
-        const student = await Student.findById(post.student_id);
+        const student = await Student.findById(post.student_id).populate(
+          "profilePic"
+        );
         const studentName = `${student.firstname} ${student.lastname} ${student.middlename}`;
         author = {
           id: student._id,
           name: studentName,
           email: student.email,
+          profilePic: student.profilePic,
         };
       } else if (post.lecturer_id) {
         // If the post was created by a lecturer, find the lecturer and return their information
-        const lecturer = await Lecturer.findById(post.lecturer_id);
+        const lecturer = await Lecturer.findById(post.lecturer_id).populate(
+          "profilePic"
+        );
         author = {
           id: lecturer._id,
           name: lecturer.name,
           email: lecturer.email,
+          profilePic: lecturer.profilePic,
         };
       }
 
@@ -122,6 +131,49 @@ router.get("/posts/:courseId", async (req, res) => {
     res.send(postData);
   } catch (err) {
     res.status(500).send("Error retrieving posts for this course");
+  }
+});
+
+// Route to get all comments for a particular class post
+router.get("/:id/comments", async (req, res) => {
+  try {
+    const comments = await ClassComment.find({ classPost: req.params.id });
+    const commentData = [];
+
+    for (const comment of comments) {
+      let author = {};
+      if (comment.student_id) {
+        // If the post was created by a student, find the student and return their information
+        const student = await Student.findById(comment.student_id).populate(
+          "profilePic"
+        );
+        const studentName = `${student.firstname} ${student.lastname} ${student.middlename}`;
+        author = {
+          id: student._id,
+          name: studentName,
+          email: student.email,
+          profilePic: student.profilePic,
+        };
+      } else if (comment.lecturer_id) {
+        // If the post was created by a lecturer, find the lecturer and return their information
+        const lecturer = await Lecturer.findById(comment.lecturer_id).populate(
+          "profilePic"
+        );
+        author = {
+          id: lecturer._id,
+          name: lecturer.name,
+          email: lecturer.email,
+          profilePic: lecturer.profilePic,
+        };
+      }
+
+      // Add the post content and author information to the postData array
+      commentData.push({ content: comment, author });
+    }
+    // Return the postData array
+    res.send(commentData);
+  } catch (err) {
+    res.status(500).send("Server Error");
   }
 });
 

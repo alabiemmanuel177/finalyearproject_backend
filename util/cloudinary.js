@@ -1,4 +1,3 @@
-// Adds the middleware for cloudinary. v2 to Ember's middleware chain. This is necessary because Ember doesn't have googletask
 const cloudinary = require("cloudinary").v2;
 
 // configure cloudinary
@@ -7,7 +6,9 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-const uploads = (file, folder) => {
+
+const uploads = (req, folder) => {
+  const file = req.file.path;
   return new Promise((resolve, reject) => {
     cloudinary.uploader.unsigned_upload(
       file,
@@ -31,20 +32,21 @@ const uploads = (file, folder) => {
   });
 };
 
-const destroy = (public_id) => {
+const uploader = async (path, folderName) => await uploads(path, folderName);
+
+// add a new function to delete a file
+const deleteFile = (public_id) => {
   return new Promise((resolve, reject) => {
     cloudinary.uploader.destroy(public_id, (error, result) => {
       if (error) {
         reject(error);
-      } else {
-        resolve(result);
       }
+      resolve(result);
     });
   });
 };
 
-const uploader = async (path, folderName) => await uploads(path, folderName);
 module.exports = {
   uploader,
-  destroy,
+  deleteFile, // export the new function
 };

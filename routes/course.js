@@ -93,6 +93,8 @@ router.get("/:courseId/members", async (req, res) => {
           model: "Department",
           populate: { path: "school", model: "School" },
         },
+        select: "-password", // exclude the password field from the response
+        populate: { path: "profilePic" }, // populate the profilePic for the lecturer
       })
       .exec();
 
@@ -121,6 +123,7 @@ router.get("/:courseId/members", async (req, res) => {
         path: "department",
         populate: { path: "school", model: "School" },
       })
+      .populate({ path: "profilePic" }) // populate the profilePic for the students
       .find({ courses: courseId });
 
     res.json({ course, classObj, students });

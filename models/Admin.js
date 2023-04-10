@@ -22,8 +22,9 @@ const AdminSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    otp: {
-      type: String,
+    profilePic: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ProfilePic",
     },
   },
   { timestamps: true }

@@ -14,13 +14,15 @@ const AssignmentAnswerRouter = require("./assignmentanswer");
 const AssignmentAnswerFileRouter = require("./assignmentanswerfile");
 const ClassRouter = require("./class");
 const NoticeRouter = require("./notice");
+const ProfilePicRouter = require("./profilePic");
 const GroupRouter = require("./group");
+const ZoomRouter = require("./videoconfrence");
 
 /**
-* @brief Adds a socket connection to req. IOconn. This is a middleware function to allow us to add an I / O connection to req
-* @param io The I / O connection to add
-* @return { Function } The middleware function that when called will add the I / O connection to req. IO
-*/
+ * @brief Adds a socket connection to req. IOconn. This is a middleware function to allow us to add an I / O connection to req
+ * @param io The I / O connection to add
+ * @return { Function } The middleware function that when called will add the I / O connection to req. IO
+ */
 function addSocketConnectionToReq(io) {
   return async (req, res, next) => {
     req.IOconn = io;
@@ -42,6 +44,7 @@ const routes = ({ app, io }) => {
     addSocketConnectionToReq(io),
     CourseMaterialRouter
   );
+  app.use("/profilepic", ProfilePicRouter);
   app.use(
     "/coursematerialfile",
     addSocketConnectionToReq(io),
@@ -62,6 +65,7 @@ const routes = ({ app, io }) => {
   app.use("/class", addSocketConnectionToReq(io), ClassRouter);
   app.use("/notice", addSocketConnectionToReq(io), NoticeRouter);
   app.use("/group", addSocketConnectionToReq(io), GroupRouter);
+  app.use("/zoom", addSocketConnectionToReq(io), ZoomRouter);
 };
 
 module.exports = { routes };

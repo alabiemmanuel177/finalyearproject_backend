@@ -1,13 +1,22 @@
 const mongoose = require("mongoose");
 const ClassCommentSchema = new mongoose.Schema(
   {
+    classPost: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ClassPost",
+      required: false,
+    },
     comment: {
       type: String,
       required: true,
     },
-    userId: {
+    student_id: {
       type: String,
-      required: true,
+      required: false,
+    },
+    lecturer_id: {
+      type: String,
+      required: false,
     },
   },
   { timestamps: true }

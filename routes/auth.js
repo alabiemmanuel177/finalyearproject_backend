@@ -95,7 +95,9 @@ router.post("/lecturer/login", async (req, res) => {
 //STUDENT LOGIN
 router.post("/student/login", async (req, res) => {
   try {
-    const student = await Student.findOne({ matricno: req.body.matricno });
+    const student = await Student.findOne({
+      matricno: req.body.matricno,
+    }).populate("profilePic");
     if (!student) {
       return res
         .status(400)

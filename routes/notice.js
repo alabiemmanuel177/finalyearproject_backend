@@ -61,7 +61,7 @@ router.get("/:id", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     let notices;
-    notices = await Notice.find().populate("author");
+    notices = await Notice.find().populate("author").sort({ createdAt: -1 });
     return res.status(200).json(notices);
   } catch (err) {
     return res.status(500).json(err);

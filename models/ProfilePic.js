@@ -1,34 +1,27 @@
 const mongoose = require("mongoose");
-
-const LecturerSchema = new mongoose.Schema(
+const ProfilePicSchema = new mongoose.Schema(
   {
-    name: {
+    fileUrl: {
       type: String,
       required: true,
     },
-    password: {
+    fileType: {
       type: String,
       required: true,
     },
-    type: {
+    fileName: {
       type: String,
       required: true,
     },
-    department: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Department",
-    },
-    email: {
+    public_id: {
       type: String,
       required: true,
-      unique: true,
     },
     profilePic: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ProfilePic",
     },
   },
-  { timestamps: true, collection: "lecturers" }
+  { timestamps: true }
 );
-
-module.exports = mongoose.model("Lecturer", LecturerSchema);
+module.exports = mongoose.model("ProfilePic", ProfilePicSchema);

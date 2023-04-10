@@ -176,4 +176,22 @@ router.get("/:assignmentId/answers/:studentId", async (req, res) => {
   }
 });
 
+//UPDATE ASSIGNMENT
+router.put("/:id", async (req, res) => {
+  const { IOconn } = req;
+  try {
+    const updatedAssignment = await Assignment.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: req.body,
+      },
+      { new: true }
+    );
+    IOconn.emit("ASSIGNMENT_UPDATED", "OK");
+    return res.status(200).json(updatedAssignment);
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
+
 module.exports = router;
