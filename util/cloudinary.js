@@ -34,6 +34,34 @@ const uploads = (req, folder) => {
 
 const uploader = async (path, folderName) => await uploads(path, folderName);
 
+const multipleUploads = (path, folder) => {
+  // const file = path;
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.unsigned_upload(
+      path,
+      "h6sy41zc",
+      {
+        resource_type: "auto",
+        folder: folder,
+      },
+      (err, result) => {
+        if (err) {
+          reject(err);
+        }
+        resolve({
+          url: result.url,
+          secure_url: result.secure_url,
+          fileName: result.original_filename,
+          id: result.public_id,
+        });
+      }
+    );
+  });
+};
+
+const multipleUploader = async (path, folderName) =>
+  await multipleUploads(path, folderName);
+
 // add a new function to delete a file
 const deleteFile = (public_id) => {
   return new Promise((resolve, reject) => {
@@ -48,5 +76,6 @@ const deleteFile = (public_id) => {
 
 module.exports = {
   uploader,
+  multipleUploader,
   deleteFile, // export the new function
 };

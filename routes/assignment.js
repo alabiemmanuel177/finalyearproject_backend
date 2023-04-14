@@ -139,24 +139,38 @@ router.get("/:assignmentId/:studentId", async (req, res) => {
 });
 
 //Grade Assignment
-router.post("/:assignmentId/:studentId", async (req, res) => {
-  const { assignmentId, studentId } = req.params;
-  const { grade } = req.body;
-  const { IOconn } = req;
-
+router.post("/:assignmentAnswerId", async (req, res) => {
   try {
+    const { assignmentAnswerId } = req.params;
+    const { grade } = req.body;
+
+    // Input validation
+    if (!assignmentAnswerId || !grade) {
+      return res.status(400).send("Bad Request");
+    }
+
+    // Update assignment answer in the database
     const assignmentAnswer = await AssignmentAnswer.findOneAndUpdate(
-      { assignment: assignmentId, student: studentId },
+      { _id: assignmentAnswerId },
       { $set: { grade } },
       { new: true }
     );
 
+    // Assignment answer not found
     if (!assignmentAnswer) {
       return res.status(404).send("Assignment answer not found");
     }
-    IOconn.emit("ASSIGNMENT_ANSWER_GRADED", "OK");
+
+    // Emit real-time event to clients
+    req.IOconn.emit("ASSIGNMENT_ANSWER_GRADED", "OK");
+
+    // Send updated assignment answer as response
     res.send(assignmentAnswer);
+
+    // Log assignmentAnswerId and grade
+    console.log(`Assignment Answer ID: ${assignmentAnswerId}, Grade: ${grade}`);
   } catch (error) {
+    // Handle errors
     res.status(500).send(error.message);
   }
 });

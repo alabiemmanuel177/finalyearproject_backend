@@ -4,7 +4,7 @@ const multer = require("multer");
 const CourseMaterial = require("../models/CourseMaterial");
 const CourseMaterialFile = require("../models/CourseMaterialFile");
 const fs = require("fs");
-const { uploader } = require("../util/cloudinary");
+const { uploader, multipleUploader } = require("../util/cloudinary");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -64,8 +64,9 @@ router.post("/", upload.array("files"), async (req, res) => {
     let uploadResults = [];
     let uploadResult = {};
     for (const file of req.files) {
-      const { path, mimetype } = file;
-      const res = await uploader(path, "BUCODEL/Course Materials");
+      const path = file.path;
+      const mimetype = file.mimetype;
+      const res = await multipleUploader(path, "BUCODEL/Course Materials");
       // console.log({ cloudinary_res: res });
       //Perform logic to extract fileType
       uploadResult = { ...res, fileType: mimetype };
@@ -79,6 +80,7 @@ router.post("/", upload.array("files"), async (req, res) => {
         fileUrl: uploadResult.secure_url,
         fileType: uploadResult.fileType,
         fileName: uploadResult.fileName,
+        public_id: uploadResult.id,
       });
       await courseMaterialFile.save();
       fileIds.push(courseMaterialFile._id);

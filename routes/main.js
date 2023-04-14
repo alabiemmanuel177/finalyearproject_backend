@@ -6,9 +6,11 @@ const CourseRouter = require("./course");
 const DepartmentRouter = require("./department");
 const SchoolRouter = require("./school");
 const ClassPostRouter = require("./classpost");
+const GroupPostRouter = require("./grouppost");
 const CourseMaterialRouter = require("./coursematerial");
 const CourseMaterialFileRouter = require("./coursematerialfile");
 const ClassComment = require("./classcomment");
+const GroupComment = require("./groupcomment");
 const AssignmentRouter = require("./assignment");
 const AssignmentAnswerRouter = require("./assignmentanswer");
 const AssignmentAnswerFileRouter = require("./assignmentanswerfile");
@@ -39,6 +41,7 @@ const routes = ({ app, io }) => {
   app.use("/department", addSocketConnectionToReq(io), DepartmentRouter);
   app.use("/school", addSocketConnectionToReq(io), SchoolRouter);
   app.use("/classpost", addSocketConnectionToReq(io), ClassPostRouter);
+  app.use("/grouppost", addSocketConnectionToReq(io), GroupPostRouter);
   app.use(
     "/coursematerial",
     addSocketConnectionToReq(io),
@@ -51,6 +54,7 @@ const routes = ({ app, io }) => {
     CourseMaterialFileRouter
   );
   app.use("/classcomment", addSocketConnectionToReq(io), ClassComment);
+  app.use("/groupcomment", addSocketConnectionToReq(io), GroupComment);
   app.use("/assignment", addSocketConnectionToReq(io), AssignmentRouter);
   app.use(
     "/assignment-answer",

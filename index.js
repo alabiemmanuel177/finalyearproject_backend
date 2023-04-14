@@ -44,7 +44,7 @@ const corsOptions = {
     }
   },
 };
-app.use(cors(corsOptions));
+app.use(cors());
 
 const fs = require("fs");
 
