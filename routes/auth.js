@@ -34,8 +34,6 @@ router.post("/student/register", async (req, res) => {
       password: hashedPass,
       department: req.body.department,
       level: req.body.level,
-      group: req.body.group,
-      otp: req.body.otp,
       email: req.body.email,
       matricno: req.body.matricno,
       status: req.body.status,
