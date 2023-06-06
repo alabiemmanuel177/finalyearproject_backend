@@ -74,14 +74,14 @@ router.post("/lecturer/login", async (req, res) => {
       "department"
     );
     if (!lecturer) {
-      return res.status(400).json("Wrong credential");
+      return res.status(400).json({ message: "Wrong credential!" });
     }
     const validated = await bcrypt.compare(
       req.body.password,
       lecturer.password
     );
     if (!validated) {
-      return res.status(400).json("Wrong credentials!");
+      return res.status(400).json({ message: "Wrong credential!" });
     }
     const { password, ...others } = lecturer._doc;
     return res.status(200).json(others);
@@ -97,9 +97,7 @@ router.post("/student/login", async (req, res) => {
       matricno: req.body.matricno,
     }).populate("profilePic");
     if (!student) {
-      return res
-        .status(400)
-        .json({ message: "No Student with this Matric No" });
+      return res.status(400).json({ message: "Wrong credential!" });
     }
     const validated = await bcrypt.compare(req.body.password, student.password);
     if (!validated) {
